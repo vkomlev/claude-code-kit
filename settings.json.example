@@ -1,0 +1,54 @@
+{
+  "_комментарий": [
+    "ПРИМЕР settings.json для Claude Code. Скопируй нужные части в свой ~/.claude/settings.json.",
+    "ГЛАВНОЕ: в путях к хукам замени C:/Users/ИМЯ на свой домашний каталог (см. README.md).",
+    "На macOS/Linux путь вида /Users/имя/.claude/hooks/... или ~/.claude/hooks/... с командой python3.",
+    "Раздел permissions.deny — переносимая защита от разрушительных команд, можно взять как есть."
+  ],
+  "permissions": {
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git push * --force*)",
+      "Bash(git push -f*)",
+      "Bash(git push * -f*)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean -f*)",
+      "Bash(sudo *)",
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /*)",
+      "Bash(*DELETE FROM*)",
+      "Bash(*TRUNCATE *)",
+      "Bash(*DROP TABLE*)",
+      "Bash(*DROP DATABASE*)",
+      "Bash(*DROP SCHEMA*)",
+      "Bash(*delete from*)",
+      "Bash(*truncate *)",
+      "Bash(*drop table*)",
+      "Bash(*drop database*)"
+    ]
+  },
+  "model": "opus",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"C:\\Users\\ИМЯ_ПОЛЬЗОВАТЕЛЯ\\.claude\\hooks\\skill_engage_gate.py\""
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"C:\\Users\\ИМЯ_ПОЛЬЗОВАТЕЛЯ\\.claude\\hooks\\skill_routing_hint.py\""
+          }
+        ]
+      }
+    ]
+  }
+}

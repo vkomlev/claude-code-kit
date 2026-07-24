@@ -1,0 +1,128 @@
+{
+  "_doc": [
+    "Реестр маршрутизации скиллов: правило -> исходники проекта -> профильные скиллы.",
+    "Единый источник истины для двух хуков:",
+    "  - skill_engage_gate.py  — блокирует правку кода/контента мимо профильного скилла;",
+    "  - skill_routing_hint.py — подсказывает профильный скилл ДО работы (если подключён).",
+    "",
+    "КАК НАСТРОИТЬ ПОД СЕБЯ (главное действие ученика):",
+    "  Ниже в `rules` — ДВА ПРИМЕРА (infra + один инженерный проект). Замени пути `root`",
+    "  на свои и добавь по строке-правилу на каждый свой проект. Больше ничего в коде",
+    "  править не нужно: новый проект = запись в `rules`.",
+    "",
+    "Поля правила:",
+    "  name        — как называть проект в тексте блока/подсказки.",
+    "  domain      — engineering | content | marketing | infra. Задаёт, КАКИЕ скиллы снимают",
+    "                блок (скилл своего домена) и текст блока.",
+    "  root        — корень проекта: НИЖНИЙ регистр, слеши вперёд (префикс пути).",
+    "                Пример: 'd:/work/my-app' или 'c:/users/имя/projects/my-app'.",
+    "  source_dirs — сегменты каталогов с исходником (['app','src']). Пустой список = всё",
+    "                поддерево (нужно для infra: settings.json/CLAUDE.md лежат в корне).",
+    "  extensions  — расширения файлов, которые считаем исходником.",
+    "  skills      — профильные скиллы (для подсказки; блок снимает любой скилл домена).",
+    "  hint        — что сказать агенту в подсказке/блоке.",
+    "",
+    "ПОРЯДОК ВАЖЕН: побеждает ПЕРВОЕ совпавшее правило — частные выше общих."
+  ],
+
+  "silencing_by_domain": {
+    "engineering": [
+      "executor-lite", "executor-pro",
+      "fastapi-api-developer", "db-check", "telegram-ux-flow-designer",
+      "qa", "qa-only", "qa-fix", "qa-design-review", "plan-design-review",
+      "techlead-code-reviewer", "pr-review", "review-gate", "review",
+      "architect-system-analyst", "change-plan-architect", "tech-spec-composer",
+      "spec-writer", "eng-review", "ceo-review", "ai-orchestrator",
+      "site-researcher", "encoding-guard", "ship", "document-release", "project-docs",
+      "verify", "code-review", "simplify", "run", "security-review"
+    ],
+    "content": [
+      "travel-copywriter", "prompt-engineer", "context-auditor", "session-digest"
+    ],
+    "marketing": [
+      "marketing-strategist", "marketing-analyst",
+      "seo-specialist", "smm-specialist", "avito-specialist",
+      "yandex-direct-specialist", "creative-brief-designer",
+      "travel-copywriter", "prompt-engineer"
+    ],
+    "infra": [
+      "claude-booster", "response-quality-coach", "update-config",
+      "skill-creator", "anthropic-skills:skill-creator"
+    ]
+  },
+
+  "domain_wording": {
+    "engineering": {
+      "subject": "исходный код",
+      "routine": "любой инженерный скилл снимает блок — напр. /executor-lite для рутинного\n     инкремента, /executor-pro для критичной правки",
+      "extra": "     При диагностике бага сначала сверь гипотезу с реальными данными/логами, а не только с кодом.\n"
+    },
+    "content": {
+      "subject": "публикуемый контент",
+      "routine": "блок снимает контентный скилл — /travel-copywriter (тексты),\n     /prompt-engineer (брифы), /context-auditor (сверка с целью)",
+      "extra": "     Человечность обязательна: текст, звучащий как GPT, — брак (см. claude-booster/references/ai-humanness.md).\n"
+    },
+    "marketing": {
+      "subject": "маркетинговый артефакт",
+      "routine": "блок снимает любой маркетинговый скилл — /marketing-strategist (зонтик),\n     канальные (/avito-specialist, /seo-specialist, ...), /marketing-analyst",
+      "extra": "     Честность данных: цифры из реальных источников или пометка [уточнить]/[гипотеза].\n"
+    },
+    "infra": {
+      "subject": "конфигурация и скиллы агента",
+      "routine": "блок снимает ТОЛЬКО /claude-booster и его родня — /response-quality-coach\n     (зафиксировать дефект скилла), /update-config (settings). Инженерные и контентные\n     скиллы домен infra НЕ открывают",
+      "extra": "     Это меняет поведение агента во ВСЕХ проектах: бэкап правимого файла,\n     Edit вместо Write, валидация JSON после правки settings.json.\n"
+    }
+  },
+
+  "exclude_file_patterns": [
+    "test_*", "*_test.py", "*.test.ts", "*.test.tsx",
+    "*.spec.ts", "*.spec.tsx", "conftest.py", "__init__.py", ".*"
+  ],
+
+  "exclude_files_by_domain": {
+    "engineering": ["readme.md", "agents.md", "claude.md"],
+    "content": ["readme.md", "agents.md", "claude.md"],
+    "marketing": ["readme.md", "agents.md", "claude.md"],
+    "infra": []
+  },
+
+  "rules": [
+    {
+      "_ПРИМЕР": "Правило infra: защищает саму ИИ-инфраструктуру (skills, hooks, settings.json, CLAUDE.md). Замени путь root на свой домашний ~/.claude в НИЖНЕМ регистре со слешами вперёд.",
+      "name": "ИИ-инфраструктура Claude",
+      "domain": "infra",
+      "root": "c:/users/ИМЯ_ПОЛЬЗОВАТЕЛЯ/.claude",
+      "source_dirs": [],
+      "extensions": [".md", ".json", ".py"],
+      "skills": ["claude-booster"],
+      "hint": "Это ИИ-инфраструктура: skills, hooks, settings.json, CLAUDE.md — то, что меняет поведение агента во ВСЕХ проектах. Единая точка входа -> /claude-booster (Режим A — аудит скилла, B — permissions/MCP/settings/CLAUDE.md, C — новый контент-скилл, D — разбор реестра ошибок). Обязательное: бэкап правимого файла, Edit вместо Write для существующих, валидация JSON после правки settings.json."
+    },
+    {
+      "_ПРИМЕР": "Правило инженерного проекта. Скопируй его на каждый свой проект: поменяй name, root (нижний регистр, слеши вперёд), source_dirs (где лежит код), extensions и skills.",
+      "name": "Мой backend-проект",
+      "domain": "engineering",
+      "root": "d:/work/my-app",
+      "source_dirs": ["app", "src", "scripts"],
+      "extensions": [".py"],
+      "skills": ["fastapi-api-developer", "db-check", "executor-pro"],
+      "hint": "Backend-проект. Код/эндпоинты -> /fastapi-api-developer. Любая операция с БД (в т.ч. data-скрипты) -> /db-check. Критичные многомодульные правки -> /executor-pro, рутина -> /executor-lite."
+    }
+  ],
+
+  "_doc_topic_hints": [
+    "topic_hints — тематические подсказки на справочники, НЕзависимые от проекта.",
+    "skill_routing_hint.py сканирует промпт; при совпадении keyword добавляет hint в контекст.",
+    "Не гейт, только подсказка. Пример ниже можно расширять своими темами."
+  ],
+  "topic_hints": [
+    {
+      "name": "documentation-task",
+      "keywords": [
+        "задокументир", "документац", "плейбук", "playbook", "оформи док",
+        "оформить док", "lessons learned", "обнови readme", "обновить readme",
+        "обнови claude.md", "обновить claude.md", "project-docs"
+      ],
+      "hint": "Задача на оформление/актуализацию документации — профильный скилл /project-docs (режим update/full). Он даёт правильное размещение (AI-слой docs/ai/ + указатели в CLAUDE.md), чек-лист качества (резолв ссылок, UTF-8 без BOM, нет секретов, нет дублирования) и регистрацию в индексе."
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+# Личные файлы, которые не должны попасть в комплект
+.skill-engaged-note.md
+.authoring-note.md
+.credentials.json
+*.local.json
+settings.local.json
+
+# Бэкапы, создаваемые claude-booster при правках
+skills/*/references/backups/
+
+# Питон
+__pycache__/
+*.pyc
+
+# ОС
+.DS_Store
+Thumbs.db
