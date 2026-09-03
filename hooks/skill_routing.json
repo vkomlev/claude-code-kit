@@ -1,78 +1,141 @@
 {
   "_doc": [
-    "Реестр маршрутизации скиллов: правило -> исходники проекта -> профильные скиллы.",
-    "Единый источник истины для двух хуков:",
-    "  - skill_engage_gate.py  — блокирует правку кода/контента мимо профильного скилла;",
-    "  - skill_routing_hint.py — подсказывает профильный скилл ДО работы (если подключён).",
-    "",
-    "КАК НАСТРОИТЬ ПОД СЕБЯ (главное действие ученика):",
-    "  Ниже в `rules` — ДВА ПРИМЕРА (infra + один инженерный проект). Замени пути `root`",
-    "  на свои и добавь по строке-правилу на каждый свой проект. Больше ничего в коде",
-    "  править не нужно: новый проект = запись в `rules`.",
+    "Реестр маршрутизации скиллов: правило -> исходники -> профильные скиллы.",
+    "ЕДИНСТВЕННЫЙ источник истины для skill_engage_gate.py (блок) и skill_routing_hint.py (подсказка).",
+    "Новое правило = строка в rules. Новый скилл = имя в silencing_by_domain. Правка кода НЕ нужна.",
     "",
     "Поля правила:",
-    "  name        — как называть проект в тексте блока/подсказки.",
-    "  domain      — engineering | content | marketing | infra. Задаёт, КАКИЕ скиллы снимают",
-    "                блок (скилл своего домена) и текст блока.",
-    "  root        — корень проекта: НИЖНИЙ регистр, слеши вперёд (префикс пути).",
-    "                Пример: 'd:/work/my-app' или 'c:/users/имя/projects/my-app'.",
-    "  source_dirs — сегменты каталогов с исходником (['app','src']). Пустой список = всё",
-    "                поддерево (нужно для infra: settings.json/CLAUDE.md лежат в корне).",
-    "  extensions  — расширения файлов, которые считаем исходником.",
-    "  skills      — профильные скиллы (для подсказки; блок снимает любой скилл домена).",
-    "  hint        — что сказать агенту в подсказке/блоке.",
+    "  name         — как называть в блоке/подсказке.",
+    "  domain       — engineering | content | marketing. Задаёт, КАКИЕ скиллы снимают блок",
+    "                 и какие исключения применяются. Без доменов вышел бы абсурд:",
+    "                 /executor-lite снимал бы блок с материала урока, а /methodist — с кода.",
+    "  root         — корень, нижний регистр, слеши вперёд (префикс пути).",
+    "  source_dirs  — сегменты каталогов. Матч по СЕГМЕНТУ пути, поэтому worktree-копии",
+    "                 (.claude/worktrees/x/app/...) тоже ловятся.",
+    "  extensions   — расширения файлов.",
+    "  skills       — профильные скиллы (для ПОДСКАЗКИ; блок снимает любой скилл домена).",
+    "  hint         — что сказать агенту.",
     "",
-    "ПОРЯДОК ВАЖЕН: побеждает ПЕРВОЕ совпавшее правило — частные выше общих."
+    "ПОРЯДОК ВАЖЕН: побеждает ПЕРВОЕ совпавшее правило. Частные правила выше общих",
+    "(wp-blocks выше exports, output/smm выше output).",
+    "",
+    "Решения оператора:",
+    "  охват    = все проекты с реальным кодом + все 5 непокрытых классов контента;",
+    "             image-gen/sample-project/sample-project/EGE не гейтим (3-61 файл, гейт = шум);",
+    "  строгость= блок снимает ЛЮБОЙ скилл СВОЕГО домена (правило про осознанность,",
+    "             не про угадывание имени); профильный скилл называется в тексте блока;",
+    "  архитектура = ЕДИНЫЙ гейт: skill_route_gate.py выведен, его покрытие здесь.",
+    "             Его маркер .authoring-note.md продолжает работать для домена content."
   ],
 
   "silencing_by_domain": {
     "engineering": [
       "executor-lite", "executor-pro",
       "fastapi-api-developer", "db-check", "telegram-ux-flow-designer",
-      "qa", "qa-only", "qa-fix", "qa-design-review", "plan-design-review",
+      "gstack", "qa", "qa-only", "qa-fix", "qa-design-review", "plan-design-review",
       "techlead-code-reviewer", "pr-review", "review-gate", "review",
       "architect-system-analyst", "change-plan-architect", "tech-spec-composer",
-      "spec-writer", "eng-review", "ceo-review", "ai-orchestrator",
-      "site-researcher", "encoding-guard", "ship", "document-release", "project-docs",
+      "spec-writer", "eng-review", "ai-orchestrator",
+      "ege-master", "openclaw", "pipeline-operator", "site-researcher",
+      "encoding-guard", "ship", "document-release",
       "verify", "code-review", "simplify", "run", "security-review"
     ],
     "content": [
-      "travel-copywriter", "prompt-engineer", "context-auditor", "session-digest"
+      "methodist", "digital-copywriter", "travel-copywriter",
+      "course-screenshots", "naive-learner-review", "expert-course-review",
+      "content-analyzer", "pipeline-operator", "context-auditor",
+      "prompt-engineer"
     ],
     "marketing": [
       "marketing-strategist", "marketing-analyst",
       "seo-specialist", "smm-specialist", "avito-specialist",
       "yandex-direct-specialist", "creative-brief-designer",
-      "travel-copywriter", "prompt-engineer"
+      "digital-copywriter", "travel-copywriter", "prompt-engineer"
     ],
     "infra": [
-      "claude-booster", "response-quality-coach", "update-config",
+      "claude-booster", "cursor-booster", "codex-booster",
+      "response-quality-coach", "update-config",
       "skill-creator", "anthropic-skills:skill-creator"
     ]
   },
+
+  "_doc_exclude": [
+    "exclude_global — настоящий мусор (зависимости/кэши/VCS), не гейтим никогда.",
+    "exclude_by_domain — доменное. КРИТИЧНО: для кода `/output/` и `/docs/` — мусор,",
+    "а для контента `/output/` — это РОВНО ТО, где живут статьи и посты. Один общий",
+    "список исключений вырезал бы весь контентный домен."
+  ],
+
+  "exclude_global": [
+    "/.venv/", "/venv/", "/site-packages/", "/node_modules/", "/__pycache__/",
+    "/.git/", "/.next/", "/.mypy_cache/", "/.pytest_cache/", "/.ruff_cache/",
+    "/.tox/", "/build/", "/dist/", ".egg-info"
+  ],
+
+  "exclude_by_domain": {
+    "engineering": [
+      "/tests/", "/test/", "/migrations/", "/alembic/", "/docs/", "/reviews/",
+      "/skills/", "/output/", "/out/", "/archive/",
+      "/.qa-artifacts/", "/test-results/", "/playwright-report-live/"
+    ],
+    "content": [
+      "/reviews/", "/_template/", "-backup", "/docs/", "/skills/", "/.codex/"
+    ],
+    "marketing": [
+      "/docs/", "/_template/", "/skills/", "/.codex/"
+    ],
+    "infra": [
+      "/projects/", "/memory/", "/backups/", "/todos/", "/statsig/",
+      "/shell-snapshots/", "/plugins/", "/ide/", "/local/", "/downloads/",
+      "/gstack/", "/scratchpad/"
+    ]
+  },
+
+  "_doc_domain_wording": [
+    "Формулировки блока по доменам. ЖИВУТ В ДАННЫХ, а не в коде: домен добавляется строкой",
+    "в JSON, и текст обязан ехать вместе с ним. Раньше словарь был захардкожен в",
+    "skill_engage_gate.py и для незнакомого домена молча подставлял ИНЖЕНЕРНЫЙ вариант —",
+    "домен infra получил текст «любой инженерный скилл снимает блок, напр. /executor-lite»,",
+    "что прямая ложь (executor-lite infra не открывает) и подталкивает к маркеру-обходу",
+    "мимо /claude-booster. Нашёл чип живой проверки.",
+    "  subject — что именно правится (идёт в первую строку блока);",
+    "  routine — как штатно снять блок (в скобках пункта 1);",
+    "  extra   — доменное предупреждение строкой ниже (может быть пустым).",
+    "Нет записи для домена -> хук берёт БЕЗОПАСНЫЙ generic-текст (ссылается на скиллы",
+    "самого правила и ничего не выдумывает), а не чужой домен."
+  ],
 
   "domain_wording": {
     "engineering": {
       "subject": "исходный код",
       "routine": "любой инженерный скилл снимает блок — напр. /executor-lite для рутинного\n     инкремента, /executor-pro для критичной правки",
-      "extra": "     При диагностике бага сначала сверь гипотезу с реальными данными/логами, а не только с кодом.\n"
+      "extra": "     При диагностике бага сначала сверь гипотезу с реальными данными/логами, а не с кодом.\n"
     },
     "content": {
-      "subject": "публикуемый контент",
-      "routine": "блок снимает контентный скилл — /travel-copywriter (тексты),\n     /prompt-engineer (брифы), /context-auditor (сверка с целью)",
-      "extra": "     Человечность обязательна: текст, звучащий как GPT, — брак (см. claude-booster/references/ai-humanness.md).\n"
+      "subject": "учебный/публикуемый контент",
+      "routine": "блок снимает любой контентный скилл — /methodist (план, задания),\n     /digital-copywriter (тексты), /prompt-engineer (брифы визуала), /course-screenshots (UI)",
+      "extra": "     Человечность обязательна (ai-humanness.md): текст, звучащий как GPT, — брак.\n"
     },
     "marketing": {
       "subject": "маркетинговый артефакт",
       "routine": "блок снимает любой маркетинговый скилл — /marketing-strategist (зонтик),\n     канальные (/avito-specialist, /seo-specialist, ...), /marketing-analyst",
-      "extra": "     Честность данных: цифры из реальных источников или пометка [уточнить]/[гипотеза].\n"
+      "extra": "     Честность данных: цифры из источников оператора или пометка [уточнить]/[гипотеза].\n     Выдуманные метрики = брак. Сначала прочитать README клиента и свежие артефакты.\n"
     },
     "infra": {
       "subject": "конфигурация и скиллы агента",
-      "routine": "блок снимает ТОЛЬКО /claude-booster и его родня — /response-quality-coach\n     (зафиксировать дефект скилла), /update-config (settings). Инженерные и контентные\n     скиллы домен infra НЕ открывают",
-      "extra": "     Это меняет поведение агента во ВСЕХ проектах: бэкап правимого файла,\n     Edit вместо Write, валидация JSON после правки settings.json.\n"
+      "routine": "блок снимает ТОЛЬКО /claude-booster и его родня — /response-quality-coach\n     (зафиксировать дефект скилла), /update-config (settings), skill-creator (новый скилл).\n     Инженерные и контентные скиллы домен infra НЕ открывают",
+      "extra": "     Это меняет поведение агента во ВСЕХ проектах и сессиях: бэкап правимого файла,\n     Edit вместо Write, anti-bloat-чек (rca-protocol.md), валидация JSON после settings.json.\n"
     }
   },
+
+  "_doc_exclude_files": [
+    "exclude_file_patterns — глобальные (мусор в любом домене, в т.ч. ВСЕ dotfiles:",
+    "маркеры-обходы .authoring-note.md / .skill-engaged-note.md и секреты .credentials.json",
+    "гейтить нельзя — иначе обход стал бы невозможен).",
+    "exclude_files_by_domain — доменные. КРИТИЧНО: `claude.md`/`agents.md` надо игнорировать",
+    "для контента и маркетинга (проектный CLAUDE.md — не урок и не стратегия), но ОБЯЗАТЕЛЬНО",
+    "гейтить для infra: глобальный ~/.claude/CLAUDE.md — сердце поведения агента."
+  ],
 
   "exclude_file_patterns": [
     "test_*", "*_test.py", "*.test.ts", "*.test.tsx",
@@ -88,41 +151,284 @@
 
   "rules": [
     {
-      "_ПРИМЕР": "Правило infra: защищает саму ИИ-инфраструктуру (skills, hooks, settings.json, CLAUDE.md). Замени путь root на свой домашний ~/.claude в НИЖНЕМ регистре со слешами вперёд.",
       "name": "ИИ-инфраструктура Claude",
       "domain": "infra",
-      "root": "c:/users/ИМЯ_ПОЛЬЗОВАТЕЛЯ/.claude",
+      "root": "~/.claude",
+      "_note_dirs": "source_dirs пуст = всё поддерево ~/.claude: settings.json и CLAUDE.md лежат в корне и ни в какой каталог-сегмент не попали бы. Исключения домена infra отсекают транскрипты, память, бэкапы, кэши и бинарники gstack.",
       "source_dirs": [],
       "extensions": [".md", ".json", ".py"],
       "skills": ["claude-booster"],
-      "hint": "Это ИИ-инфраструктура: skills, hooks, settings.json, CLAUDE.md — то, что меняет поведение агента во ВСЕХ проектах. Единая точка входа -> /claude-booster (Режим A — аудит скилла, B — permissions/MCP/settings/CLAUDE.md, C — новый контент-скилл, D — разбор реестра ошибок). Обязательное: бэкап правимого файла, Edit вместо Write для существующих, валидация JSON после правки settings.json."
+      "hint": "Это ИИ-инфраструктура: skills, hooks, settings.json, CLAUDE.md — то, что меняет поведение агента во ВСЕХ проектах и сессиях. Единая точка входа -> /claude-booster (Режим A — аудит скилла, B — permissions/MCP/settings/CLAUDE.md, C — новый контент-скилл, D — RCA по реестру ошибок). Обязательное: бэкап правимого файла в claude-booster/references/backups/, Edit вместо Write для существующих, anti-bloat-чек перед добавлением правил (references/rca-protocol.md), валидация JSON после правки settings.json. Правка CLAUDE.md/settings.json — общий ресурс: Шаг 0-А межагентного реестра (~/projects/Root\\agents\\). Дефект скилла -> /response-quality-coach (реестр), затем /claude-booster Режим D."
     },
     {
-      "_ПРИМЕР": "Правило инженерного проекта. Скопируй его на каждый свой проект: поменяй name, root (нижний регистр, слеши вперёд), source_dirs (где лежит код), extensions и skills.",
-      "name": "Мой backend-проект",
+      "name": "Курс: экспорт wp-blocks (→ПРОД сайт)",
+      "domain": "content",
+      "root": "~/projects/courses-project",
+      "source_dirs": ["wp-blocks"],
+      "extensions": [".json"],
+      "skills": ["digital-copywriter", "methodist"],
+      "hint": "Блочный JSON урока — источник публикации на ПРОД WordPress (видно ученикам, необратимо). Тексты -> /digital-copywriter (режим wp-publish). Структура/задания -> /methodist. Публикация — с подтверждения оператора."
+    },
+    {
+      "name": "Курс: экспорты (→ПРОД LMS и сайт)",
+      "domain": "content",
+      "root": "~/projects/courses-project",
+      "source_dirs": ["exports"],
+      "extensions": [".json", ".md"],
+      "skills": ["methodist", "digital-copywriter", "pipeline-operator"],
+      "hint": "Источник публикации в ПРОД LMS и на сайт (необратимо, видно ученикам): LMS-графы (lms-*.json), WP-навигатор и WP-выгрузки (wp-*.md), handoff-документы. Правка руками ломает соответствие экспорта и опубликованного курса. Структура -> /methodist; тексты -> /digital-copywriter; публикация -> /pipeline-operator + подтверждение оператора. Информатику публиковать ТОЛЬКО по-классно (lms-grade-N-graph.json), единый граф — нет."
+    },
+    {
+      "name": "Курс: брифы визуалов (Codex-handoff)",
+      "domain": "content",
+      "root": "~/projects/courses-project",
+      "source_dirs": ["images"],
+      "extensions": [".md"],
+      "skills": ["prompt-engineer", "methodist", "course-screenshots"],
+      "hint": "Бриф визуала урока (docs/ai/visuals-policy.md, класс 2: иллюстрации → Codex-handoff). Это учебный артефакт, а не служебный файл: `alt` ОБЯЗАТЕЛЕН и уходит в WP и LMS, `anchor` задаёт место образа в уроке. Промпт (RU/EN/Negative) -> /prompt-engineer (режим image-gen); дидактика (что образ обязан объяснить, нужны ли подписи) -> /methodist. Если визуал объясняет классификацию/устройство/различие терминов — это ОБУЧАЮЩАЯ инфографика: нужны подписи и связь «термин → образ»; немые красивые PNG = визуальный дефект, а не покрытие. UI-скриншоты (терминал, приложение, файлы) — класс 3 -> /course-screenshots (детерминированный рендер, не генеративка). Точные схемы/числа — класс 1: ASCII прямо в материале, картинкой НЕ делать."
+    },
+    {
+      "name": "Курс: материалы и задания",
+      "domain": "content",
+      "root": "~/projects/courses-project",
+      "source_dirs": ["materials", "assignments"],
+      "_note_ext": "Только .md: авторский контент в materials/assignments — markdown. Весь .json там — машинные артефакты скриптов (*-upload-results, *-publish-report, wp-media-map-*, *-verify) и скрейпленные данные; гейтить их = ложные срабатывания. Авторский JSON живёт в exports/wp-blocks/ (своё правило).",
+      "extensions": [".md"],
+      "skills": ["methodist", "digital-copywriter"],
+      "hint": "Учебный контент курса. Задания и критерии -> /methodist. Тексты материалов -> /digital-copywriter (режим it-writer). Человечность обязательна (ai-humanness.md)."
+    },
+    {
+      "name": "Курс: учебный план",
+      "domain": "content",
+      "root": "~/projects/courses-project",
+      "source_dirs": ["plan"],
+      "extensions": [".md", ".json"],
+      "skills": ["methodist"],
+      "hint": "Учебный план модуля — ГЛАВНЫЙ артефакт /methodist (цели, последовательность, оценка сложности по Блуму, предпосылки). Авторить планом вслепую = терять выравнивание целей и практики."
+    },
+    {
+      "name": "Соцсети: выдача SMM",
+      "domain": "content",
+      "root": "~/projects/content-project",
+      "source_dirs": ["smm"],
+      "extensions": [".md"],
+      "skills": ["smm-specialist", "digital-copywriter"],
+      "hint": "Дом выдачи /smm-specialist (по конвенции marketing/CLAUDE.md он пишет сюда, а не в Marketing). Стратегия/контент-план -> /smm-specialist; сами посты -> /digital-copywriter или /travel-copywriter по ТЗ."
+    },
+    {
+      "name": "Статьи и посты (content-project)",
+      "domain": "content",
+      "root": "~/projects/content-project",
+      "source_dirs": ["output"],
+      "extensions": [".md"],
+      "skills": ["digital-copywriter", "travel-copywriter"],
+      "hint": "Выдача копирайт-скиллов (TG/VK/сайт/email). Тексты владельца -> /digital-copywriter; тревел -> /travel-copywriter. Голос бренда + человечность (ai-humanness.md, 12 AI-маркеров) обязательны: текст, звучащий как GPT, — брак."
+    },
+    {
+      "name": "Маркетинг: стратегия и позиционирование",
+      "domain": "marketing",
+      "root": "~/projects/marketing",
+      "source_dirs": ["strategy"],
+      "extensions": [".md"],
+      "skills": ["marketing-strategist"],
+      "hint": "Зонтичный слой: рынок, ЦА, позиционирование, офферы, воронка, бюджет -> /marketing-strategist. Сначала прочитать clients/<клиент>/README.md и свежие артефакты — не начинать с нуля. Честность данных: цифры из источников или пометка [уточнить]."
+    },
+    {
+      "name": "Маркетинг: кросс-канальная кампания",
+      "domain": "marketing",
+      "root": "~/projects/marketing",
+      "source_dirs": ["campaigns"],
+      "extensions": [".md"],
+      "skills": ["marketing-strategist", "marketing-analyst"],
+      "hint": "Кампания под событие -> /marketing-strategist campaign (план + брифы каналам), итоги -> /marketing-analyst. Сверка с docs/NORTH_STAR.md перед крупным начинанием."
+    },
+    {
+      "name": "Маркетинг: Авито",
+      "domain": "marketing",
+      "root": "~/projects/marketing",
+      "source_dirs": ["avito"],
+      "extensions": [".md"],
+      "skills": ["avito-specialist"],
+      "hint": "Объявления услуг, ранжирование, платное продвижение, риски банов -> /avito-specialist. Скилл не публикует сам: готовит текст + ТЗ на фото, публикация за оператором."
+    },
+    {
+      "name": "Маркетинг: Яндекс Директ",
+      "domain": "marketing",
+      "root": "~/projects/marketing",
+      "source_dirs": ["direct"],
+      "extensions": [".md"],
+      "skills": ["yandex-direct-specialist"],
+      "hint": "Структура кампаний, семантика + минус-фразы, тексты, цели Метрики, бюджет -> /yandex-direct-specialist. Учитывать модерацию образовательных услуг. Запуск — оператор."
+    },
+    {
+      "name": "Маркетинг: SEO и ИИ-ответы",
+      "domain": "marketing",
+      "root": "~/projects/marketing",
+      "source_dirs": ["seo"],
+      "extensions": [".md"],
+      "skills": ["seo-specialist"],
+      "hint": "Органика Яндекс/Google + попадание в ИИ-ответы (GEO/AEO) -> /seo-specialist. Скилл не пишет статьи: готовит семантику, техаудит и ТЗ для копирайтера."
+    },
+    {
+      "name": "Маркетинг: креативы",
+      "domain": "marketing",
+      "root": "~/projects/marketing",
+      "source_dirs": ["creative"],
+      "extensions": [".md"],
+      "skills": ["creative-brief-designer"],
+      "hint": "Брифы и концепции визуала -> /creative-brief-designer. Картинки он не генерирует: выдаёт ТЗ для /prompt-engineer (image-gen) или image-gen."
+    },
+    {
+      "name": "Маркетинг: аналитика",
+      "domain": "marketing",
+      "root": "~/projects/marketing",
+      "source_dirs": ["analytics"],
+      "extensions": [".md"],
+      "skills": ["marketing-analyst"],
+      "hint": "Юнит-экономика (CAC/LTV/ROMI), воронка, сквозная аналитика, отчёты -> /marketing-analyst. Измеряет и объясняет; решения по бюджету принимает /marketing-strategist. При малых выборках — честные выводы, не выдумывать метрики."
+    },
+    {
+      "name": "Маркетинг: брифы SMM от стратега",
+      "domain": "marketing",
+      "root": "~/projects/marketing",
+      "source_dirs": ["smm"],
+      "extensions": [".md"],
+      "skills": ["marketing-strategist", "smm-specialist"],
+      "hint": "Папка smm/ клиента — для БРИФОВ от стратега, не для выдачи /smm-specialist (его дом — content-project/output/smm/). Бриф -> /marketing-strategist; стратегия канала -> /smm-specialist."
+    },
+
+    {
+      "name": "LMS API",
       "domain": "engineering",
-      "root": "d:/work/my-app",
-      "source_dirs": ["app", "src", "scripts"],
+      "root": "~/projects/lms",
+      "source_dirs": ["app", "scripts"],
       "extensions": [".py"],
-      "skills": ["fastapi-api-developer", "db-check", "executor-pro"],
-      "hint": "Backend-проект. Код/эндпоинты -> /fastapi-api-developer. Любая операция с БД (в т.ч. data-скрипты) -> /db-check. Критичные многомодульные правки -> /executor-pro, рутина -> /executor-lite."
+      "skills": ["fastapi-api-developer", "db-check"],
+      "hint": "LMS backend (FastAPI+Postgres). Код/эндпоинты -> /fastapi-api-developer. Любая операция с БД (в т.ч. data-скрипты в scripts/) -> /db-check: боевая БД, прод-хост."
+    },
+    {
+      "name": "tg-bot",
+      "domain": "engineering",
+      "root": "~/projects/tg-bot",
+      "source_dirs": ["src"],
+      "extensions": [".py"],
+      "skills": ["telegram-ux-flow-designer", "fastapi-api-developer"],
+      "hint": "Telegram-боты на aiogram (src/bots/{teacher,methodist,student,admin}). UX-флоу/диалоги -> /telegram-ux-flow-designer. Диагностика бага: сверять гипотезу с реальными логами, а не только с кодом."
+    },
+    {
+      "name": "SPW",
+      "domain": "engineering",
+      "root": "~/projects/spw",
+      "source_dirs": ["app", "components", "lib", "hooks", "stores", "types"],
+      "extensions": [".ts", ".tsx"],
+      "skills": ["qa", "qa-only", "eng-review", "executor-pro"],
+      "hint": "SPW — Next.js/TypeScript веб-клиент учеников (прод: example.com). UI/UX и QA в браузере -> /qa (систематическое тестирование + правка находок) или /qa-only (только отчёт), через MCP Claude_Browser/claude-in-chrome. Для авторизованного прод-прогона (в т.ч. фоновые чипы) — live-browse.mjs, для dev-стенда :3000 — qa-browse.mjs (см. ~/.claude/skills/claude-booster/references/live-browser-testing.md). /gstack выведен из реестра — неработоспособен (2026-07-20). Архитектурные правки -> /eng-review. Зависит от LMS API: cross-project memory обязательна."
+    },
+    {
+      "name": "content-service",
+      "domain": "engineering",
+      "root": "~/projects/content-service",
+      "source_dirs": ["monolith", "content_hub_client", "cb_llm_client", "db", "config", "scripts"],
+      "extensions": [".py"],
+      "skills": ["db-check", "fastapi-api-developer", "pipeline-operator"],
+      "hint": "content-service — публикаторы пишут в ПРОД WP и LMS (необратимо, видно ученикам). Любая правка публикатора/БД -> /db-check. Запуск пайплайнов -> /pipeline-operator. Публикация требует подтверждения оператора."
+    },
+    {
+      "name": "AvitoManager",
+      "domain": "engineering",
+      "root": "~/projects/avito",
+      "source_dirs": ["avito_manager"],
+      "extensions": [".py"],
+      "skills": ["fastapi-api-developer", "db-check"],
+      "hint": "AvitoManager — Typer CLI + aiogram + Postgres/Alembic. БД/миграции -> /db-check. Внешние объявления Авито необратимы: публикация — с подтверждения оператора."
+    },
+    {
+      "name": "Root Task Tracker",
+      "domain": "engineering",
+      "root": "~/projects/root",
+      "source_dirs": ["orchestrator", "tools", "bot"],
+      "extensions": [".py"],
+      "skills": ["executor-pro", "architect-system-analyst"],
+      "hint": "Root — кросс-проектный трекер задач (ADR-0003) + межагентный реестр. Правка orchestrator/tools влияет на pre-commit hook и граф задач ВСЕХ проектов -> /executor-pro."
+    },
+    {
+      "name": "knowledge-pipeline",
+      "domain": "engineering",
+      "root": "~/projects/knowledge-pipeline",
+      "source_dirs": ["src"],
+      "extensions": [".py"],
+      "skills": ["executor-pro", "pipeline-operator"],
+      "hint": "knowledge-pipeline — конвейер классификации знаний, питает корзины skill_boost (knowledge-pipeline -> claude-booster Режим E). Правка конвейера меняет то, что попадёт в аудит скиллов."
+    },
+    {
+      "name": "sample-project",
+      "domain": "engineering",
+      "root": "~/projects/sample-project",
+      "source_dirs": ["app"],
+      "extensions": [".py"],
+      "skills": ["db-check", "fastapi-api-developer"],
+      "hint": "sample-project — импорт вопросов Google Sheets -> QSM/WordPress и LMS API. Пишет во внешние системы -> /db-check перед импортом, dry_run_lms_import до боевого прогона."
+    },
+    {
+      "name": "sample-project",
+      "domain": "engineering",
+      "root": "~/projects/sample-project",
+      "source_dirs": ["src"],
+      "extensions": [".py"],
+      "skills": ["site-researcher", "executor-pro"],
+      "hint": "sample-project — парсер структуры курсов в XLSX для LMS. Разведка DOM/структуры сайта -> /site-researcher."
+    },
+    {
+      "name": "sample-project",
+      "domain": "engineering",
+      "root": "~/projects/sample-project",
+      "source_dirs": ["src", "config"],
+      "extensions": [".py"],
+      "skills": ["executor-pro", "site-researcher"],
+      "hint": "sample-project — интеграция и импорт в VK/соцсети. Публикация во внешние соцсети необратима — с подтверждения оператора."
+    },
+    {
+      "name": "sample-project",
+      "domain": "engineering",
+      "root": "~/projects/sample-project",
+      "source_dirs": ["scripts", "config", "wp"],
+      "extensions": [".py"],
+      "skills": ["pipeline-operator", "site-researcher"],
+      "hint": "sample-project — контентный пайплайн TG + WordPress. Запуск пайплайна -> /pipeline-operator. Публикация в WP необратима."
     }
   ],
-
   "_doc_topic_hints": [
-    "topic_hints — тематические подсказки на справочники, НЕзависимые от проекта.",
-    "skill_routing_hint.py сканирует промпт; при совпадении keyword добавляет hint в контекст.",
-    "Не гейт, только подсказка. Пример ниже можно расширять своими темами."
+    "topic_hints — тематические указатели на справочники, НЕзависимые от проекта.",
+    "Механизм: skill_routing_hint.py сканирует промпт оператора; если встретилось любое",
+    "keyword (регистронезависимо, подстрокой) — добавляет hint-строку в контекст сессии.",
+    "Цель — чтобы чип нырял в готовый справочник, а не переоткрывал грабли.",
+    "Не гейт, не блок: только подсказка. Новый справочник = новая запись, код не трогать.",
+    "keywords держать специфичными (не 'задание' в одиночку) — иначе подсказка станет шумом."
   ],
   "topic_hints": [
+    {
+      "name": "ege-import",
+      "keywords": [
+        "kompege", "компеге", "sdamgia", "сдамгиа", "решуеге", "решу егэ", "решуегэ",
+        "polyakov", "поляков", "крылов", "krylov", "яндекс учебник", "yandex учебник",
+        "external_task", "external_uid", "парсинг задан", "парсер задан", "импорт задан",
+        "solution_rules", "accepted_answers", "difficulty_id", "order_position",
+        "стем задан", "мусор скрейп", "wp_nav", "tbl_com", "manual_review",
+        "задания егэ", "задания оге", "задачи егэ", "задачи оге", "заданий егэ", "заданий оге",
+        "заданиям егэ", "заданиям оге", "заданиями егэ", "задание егэ", "задание оге"
+      ],
+      "hint": "Работа с заданиями ЕГЭ/ОГЭ или внешними источниками (kompege/sdamgia/polyakov/yandex/krylov/TG/wp_nav): СНАЧАЛА прочитай плейбук ~/projects/content-service/docs/ai/ege-import-playbook.md (карта источников, дефекты F1-F10, durable-инварианты, гоча прод/dev) — там уже собраны грабли мая-июля 2026. Не изобретай велосипед: парсеры, чистка стемов, solution_rules, difficulty, дубли, медиа — уже разобраны."
+    },
     {
       "name": "documentation-task",
       "keywords": [
         "задокументир", "документац", "плейбук", "playbook", "оформи док",
-        "оформить док", "lessons learned", "обнови readme", "обновить readme",
-        "обнови claude.md", "обновить claude.md", "project-docs"
+        "оформить док", "оформлен документац", "свод документ", "лессонс",
+        "lessons learned", "актуализир документац", "обнови readme",
+        "обновить readme", "обнови claude.md", "обновить claude.md",
+        "двухслойн документ", "project-docs"
       ],
-      "hint": "Задача на оформление/актуализацию документации — профильный скилл /project-docs (режим update/full). Он даёт правильное размещение (AI-слой docs/ai/ + указатели в CLAUDE.md), чек-лист качества (резолв ссылок, UTF-8 без BOM, нет секретов, нет дублирования) и регистрацию в индексе."
+      "hint": "Задача на оформление/свод/актуализацию документации — профильный скилл /project-docs (режим update/full). Назови его первой строкой ДО работы. Гейт docs не форсит — этот класс держится на дисциплине. Он даёт: правильное размещение (AI-слой docs/ai/ + указатели в CLAUDE.md), чек-лист качества (резолв ссылок, UTF-8 без BOM, нет секретов/IP, нет дублирования), регистрацию в индексе. Ресёрч можно параллельно, но синтез и приёмку — под скиллом."
     }
   ]
 }

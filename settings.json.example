@@ -3,7 +3,9 @@
     "ПРИМЕР settings.json для Claude Code. Скопируй нужные части в свой ~/.claude/settings.json.",
     "ГЛАВНОЕ: в путях к хукам замени C:/Users/ИМЯ на свой домашний каталог (см. README.md).",
     "На macOS/Linux путь вида /Users/имя/.claude/hooks/... или ~/.claude/hooks/... с командой python3.",
-    "Раздел permissions.deny — переносимая защита от разрушительных команд, можно взять как есть."
+    "Раздел permissions.deny — переносимая защита от разрушительных команд, можно взять как есть.",
+    "Хуки делятся на два рода: PreToolUse не дают сделать опасное действие, PostToolUse проверяет",
+    "результат уже записанного файла. Второе часто забывают, а именно оно даёт агенту сигнал об ошибке."
   ],
   "permissions": {
     "deny": [
@@ -36,6 +38,30 @@
           {
             "type": "command",
             "command": "python \"C:\\Users\\ИМЯ_ПОЛЬЗОВАТЕЛЯ\\.claude\\hooks\\skill_engage_gate.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"C:\\Users\\ИМЯ_ПОЛЬЗОВАТЕЛЯ\\.claude\\hooks\\chip_tree_gate.py\""
+          },
+          {
+            "type": "command",
+            "command": "python \"C:\\Users\\ИМЯ_ПОЛЬЗОВАТЕЛЯ\\.claude\\hooks\\index_scope_gate.py\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"C:\\Users\\ИМЯ_ПОЛЬЗОВАТЕЛЯ\\.claude\\hooks\\artifact_check.py\""
           }
         ]
       }

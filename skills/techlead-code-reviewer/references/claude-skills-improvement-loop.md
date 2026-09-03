@@ -3,7 +3,7 @@
 ## Goal
 Capture significant Claude skill failures during review and convert them into preventive improvements to the skill catalogue (`~/.claude/skills/`) or project rules (`.claude/CLAUDE.md`).
 
-Этот цикл замыкает review на апгрейд скиллов-разработчиков (`/executor-lite`, `/executor-pro`, `/fastapi-api-developer`, `/spec-writer`, `/change-plan-architect`, `/tech-spec-composer`, `/techlead-code-reviewer` и смежные).
+Стек IDE_booster — только Claude-скиллы (Cursor и Codex выведены). Этот цикл замыкает review на апгрейд скиллов-разработчиков (`/executor-lite`, `/executor-pro`, `/fastapi-api-developer`, `/spec-writer`, `/change-plan-architect`, `/tech-spec-composer`, `/techlead-code-reviewer` и смежные).
 
 ## What To Log
 Log when at least one condition is true:
@@ -21,7 +21,7 @@ Log when at least one condition is true:
 - `<project>/docs/ai/ERRORS.md`
 
 2. If project register is unavailable:
-- `~/.claude/ERRORS.md` (глобальный реестр)
+- `~/projects/IDE_booster/Docs/ai/ERRORS.md`
 
 ## Minimum Entry Fields
 - Date

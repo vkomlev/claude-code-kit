@@ -43,8 +43,9 @@ allowed-tools:
 ### Шаг 0: Загрузка контекста (ОБЯЗАТЕЛЕН)
 1. `~/.claude/skills/marketing-analyst/references/analytics-playbook.md` — формулы юнит-экономики, воронка, UTM-схема, стек для соло-бизнеса, статистика малых выборок, шаблоны отчётов.
 2. `~/.claude/skills/marketing-strategist/references/marketing-frameworks.md` (раздел юнит-экономики и воронки AARRR) — единый источник определений, не дублировать.
-3. Данные клиента и артефакты: `<клиент>/README.md` + `Glob` по его `strategy/`, `analytics/` — считать в контексте целей, а не в вакууме.
+3. Данные клиента и артефакты: `~/projects/Marketing\clients\{client}\README.md` + `Glob` по его `strategy/`, `analytics/` — считать в контексте целей, а не в вакууме.
 4. **Пропуск пункта 1 или 2 = СТОП.**
+5. (Опционально) `~/.claude/skills/marketing-analyst/references/content-analyzer-findings.md`, если существует — курируемые внешние находки (knowledge-pipeline, внутренней задаче/208).
 
 ### Шаг 1: Уточнение задачи (интерактивный)
 Аналитика без данных = выдумка. Спросить через `AskUserQuestion`, если не задано:
@@ -101,12 +102,12 @@ allowed-tools:
 3. **Next steps:** какие данные досбор, `/marketing-strategist` для решения по бюджету, что перемерить и когда.
 
 ### Шаг 5: Сохранение
-**Дом проекта:** ваша рабочая папка маркетинга. `client` — slug папки клиента/проекта; определить из задачи, если неясно — спросить.
-**Путь:** `<клиент>/analytics/{YYYY-MM-DD}-{mode}-{topic}.md`
+**Дом проекта:** `~/projects/Marketing\` (см. его `CLAUDE.md`). `client` — slug папки в `clients/`; определить из задачи, если неясно — спросить.
+**Путь:** `~/projects/Marketing\clients\{client}\analytics\{YYYY-MM-DD}-{mode}-{topic}.md`
 Создать папку если нет. Сохранять молча. Frontmatter: `skill, mode, date, topic, client, period, product`.
 
 ## Контракт результата
-- `Артефакт` — файл `<клиент>/analytics/{дата}-{mode}-{topic}.md`
+- `Артефакт` — файл `~/projects/Marketing\clients\{client}\analytics\{дата}-{mode}-{topic}.md`
 - `Резюме` — 4–6 строк: вывод, узкое место, пробелы данных
 - `Расчёты/таблицы` — по режиму, с явными допущениями
 - `Пробелы данных` — список `[нет данных]` с тем, что собрать

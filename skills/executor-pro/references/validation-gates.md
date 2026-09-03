@@ -34,8 +34,8 @@
 ## БД gates (если затронуты миграции/схема)
 
 ### G5. Alembic isolation
-- Проверить `version_table_schema='<ваша-схема>'` в `env.py`
-- `alembic history` показывает только миграции вашей схемы
+- Проверить `version_table_schema='content_hub'` в `env.py`
+- `alembic history` показывает только миграции content_hub
 - **Критерий PASS:** `public.alembic_version` не упоминается в diff миграций
 - **FAIL:** статус `NOT_READY`, не продолжать
 
@@ -46,7 +46,7 @@
 
 ### G7. Cross-schema safety
 - `grep -rE "public\.|SET search_path" migrations/versions/<new>.py`
-- **Критерий PASS:** никаких операций над схемами вне вашей рабочей схемы
+- **Критерий PASS:** никаких операций над схемами вне `content_hub`
 - **FAIL:** статус `NOT_READY`, эскалация
 
 ## Pipeline gates (если затронут orchestration)

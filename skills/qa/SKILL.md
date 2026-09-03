@@ -87,7 +87,7 @@ fi
   `mcp__Claude_Browser__read_console_messages`, `mcp__Claude_Browser__read_network_requests`,
   `mcp__Claude_Browser__resize_window`, `mcp__Claude_Browser__tabs_create`/`tabs_close`/`tabs_select`/`tabs_context`,
   `mcp__Claude_Browser__preview_logs` (stdout/stderr dev-сервера).
-- **Страница требует логина существующим аккаунтом оператора (прод-сайт с авторизацией,
+- **Страница требует логина существующим аккаунтом оператора (прод LMS/SPW с авторизацией,
   соцсети и т.п.) → `claude-in-chrome` MCP** — реальный Chrome оператора с его сессиями и cookies.
   Инструменты дефериты: сначала одним вызовом
   `ToolSearch({query: "select:mcp__claude-in-chrome__tabs_context_mcp,mcp__claude-in-chrome__navigate,mcp__claude-in-chrome__computer,mcp__claude-in-chrome__read_page,mcp__claude-in-chrome__tabs_create_mcp"})`
@@ -95,8 +95,9 @@ fi
   Дальше те же паттерны команд (navigate, computer, read_page, find, form_input), но в реальном браузере
   оператора. Ограничение: недоступен в фоновых чипах/headless — только в интерактивной сессии с
   открытым Chrome.
-- **Нужны и headless-совместимость, и авторизация одновременно** — это выходит за рамки `/qa`:
-  подними отдельный персистентный авторизованный профиль браузера вне этого skill.
+- **Нужны и headless-совместимость (фоновый чип), и авторизация одновременно** — не решать это
+  внутри `/qa`. См. персистентный авторизованный профиль `live-browse.mjs`, описанный в
+  `~/.claude/skills/claude-booster/references/live-browser-testing.md`.
 
 Скриншот приходит как изображение прямо в ответ инструмента (`computer{action:"screenshot"}` /
 `zoom`) — его достаточно показать пользователю в ответе, отдельный `Read` не нужен.

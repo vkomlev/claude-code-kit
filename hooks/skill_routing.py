@@ -6,13 +6,14 @@ r"""Общая библиотека маршрутизации скиллов: �
   - skill_engage_gate.py  — PreToolUse Write|Edit: блок правки кода без скилла (реактив);
   - skill_routing_hint.py — UserPromptSubmit: подсказка профильных скиллов (проактив).
 
-Почему данные, а не код: раскладки проектов разные (одни держат код в `app/`, другие в
-`src/` или пакетных каталогах; языки — Python, TS/TSX и т.д.). Захардкоженный хук покрыл бы
-пару проектов. Здесь новый проект = строка в JSON, новый скилл = имя в списке.
+Почему данные, а не код: класс «правка кода мимо профильного скилла» лечился микрошагами —
+хук был захардкожен под `.py` в `app/`/`src/` и покрывал 2 проекта из 17.
+Реальные раскладки другие: content-service — пакетные каталоги (monolith/, db/), SPW — TS/TSX,
+Avito — avito_manager/. Теперь новый проект = строка в JSON, новый скилл = имя в списке.
 
-Матчинг по СЕГМЕНТУ каталога (а не glob) — намеренно: так и worktree-копии проекта
-(`.../.claude/worktrees/x/app/services/y.py`) попадают под гейт, чего glob `app/**/*.py`
-от корня не дал бы.
+Матчинг по СЕГМЕНТУ каталога (а не glob) — намеренно: так worktree-копии
+(`~/projects/lms/.claude/worktrees/x/app/services/y.py`) тоже попадают под гейт,
+чего glob `app/**/*.py` от корня не дал бы.
 """
 from __future__ import annotations
 
@@ -25,9 +26,10 @@ from typing import Any
 
 # Служебные вставки харнесса в промпте (<system-reminder>…</system-reminder>): это НЕ слова
 # оператора, а контекст от Claude Code. Их надо вырезать перед матчингом проектов, иначе
-# подсказка ловит имена проектов из чужого текста (например, из напоминания харнесса про
-# другой проект). Поэтому служебные вставки вырезаем: матчим по смыслу промпта оператора,
-# а не по всему сырому тексту.
+# подсказка ловит имена проектов из чужого текста. Реальный случай: напоминание
+# о фоновом чипе «Починить реестр проектов: knowledge-pipeline + mojibake» попало в промпт
+# про SPW — и подсказка приплела knowledge-pipeline. Тот же приём, что _strip_data_contexts
+# в chip_tree_gate: матчим по смыслу, а не по всему сырому тексту.
 _SYSTEM_REMINDER_RE = re.compile(r"<system-reminder>.*?</system-reminder>", re.DOTALL | re.IGNORECASE)
 
 # Операторский запуск скилла: харнесс пишет `<command-name>/skill</command-name>`.
@@ -133,7 +135,7 @@ def find_projects_in_text(text: str, registry: dict[str, Any]) -> list[dict[str,
     for proj in registry.get("rules", []):
         name = str(proj.get("name", "")).lower()
         root = norm(str(proj.get("root", "")))
-        # Короткое имя каталога проекта (последний сегмент пути root).
+        # Короткое имя каталога проекта (lms, tg-bot, spw, avito, ...).
         short = root.rstrip("/").rsplit("/", 1)[-1] if root else ""
         hit = False
         if root and root in low:
@@ -150,7 +152,7 @@ def find_projects_in_text(text: str, registry: dict[str, Any]) -> list[dict[str,
 
 
 def _word_in(haystack: str, needle: str) -> bool:
-    """Вхождение по границе слова — чтобы 'app' не ловилось внутри 'my_app' и наоборот."""
+    """Вхождение по границе слова — чтобы 'lms' не ловилось внутри 'tg-bot' и наоборот."""
     if not needle:
         return False
     idx = 0
@@ -224,8 +226,8 @@ def _find_skill_call(node: object, allowed: frozenset[str]) -> bool:
 def domain_skills(registry: dict[str, Any], domain: str) -> frozenset[str]:
     """Скиллы, снимающие блок для домена. Пустой домен -> объединение всех.
 
-    Домены обязательны: без них инженерный скилл снимал бы блок с маркетингового
-    артефакта, и наоборот. Каждый домен силансится только СВОИМИ скиллами.
+    Домены обязательны: без них /executor-lite снимал бы блок с материала урока,
+    а /methodist — с кода бэкенда. Каждый домен силансится только СВОИМИ скиллами.
     """
     by_domain = registry.get("silencing_by_domain", {})
     if domain:

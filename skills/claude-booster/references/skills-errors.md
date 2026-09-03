@@ -1,7 +1,8 @@
 # Реестр дефектов скиллов
 
-Формат записи (OPEN → FIXED) — см. `rca-protocol.md`.
-Пока пусто: заполняется по мере работы через `/response-quality-coach` и `/claude-booster` Режим D.
+Формат записи (OPEN -> FIXED) — см. `rca-protocol.md`.
+Пока пусто: заполняется по мере работы через `/response-quality-coach`
+и `/claude-booster` Режим D.
 
 <!-- Пример записи:
 ## OPEN — <дата> — <skill>

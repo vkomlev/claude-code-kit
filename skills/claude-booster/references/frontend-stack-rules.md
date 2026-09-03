@@ -2,7 +2,7 @@
 
 Единые правила для frontend-проектов на Next.js 16 App Router + TS + React 19. Подключается из `executor-lite`, `executor-pro`, `techlead-code-reviewer`, `qa-fix`, `tech-spec-composer` (для frontend ТЗ).
 
-Правила выведены из реальных дефектов frontend-разработки: middleware, сломанный для одного из runtime-контекстов; type assertions без валидации; `useEffect`+mutate вместо Server Actions; hotfix без ревью.
+Источник дефектов: `~/projects/spw\` чаты 27-28.04.2026 (proxy.ts middleware был сломан для TG App, type assertions без validation, useEffect+mutate вместо Server Actions, hotfix без review).
 
 ## 1. TypeScript: запрет устаревших приёмов
 
@@ -34,7 +34,8 @@
   рассинхронится с URL и подсветкой навигации. Правильно: состояние выводить из
   `useSearchParams` (URL = источник истины), кнопки-переключатели меняют URL (`router.push`),
   список/контент читает URL. `initialType`-проп из server-компонента — антипаттерн для этого
-  класса (иначе фильтр по типу показывает не тот бакет при переходах между `?type=`).
+  класса. (Источник: session 2026-07-19 — тип-фильтр help-requests показывал не тот бакет
+  при переходах между `?type=`.)
 - Prop drilling глубже 2 уровней без обоснования (использовать context или Zustand).
 - Manual DOM mutations (`document.querySelector` + `.style`, `.innerHTML`) — только через ref или React state.
 
@@ -93,7 +94,7 @@ export default async function Page() {
 - `ApiClient` обязан иметь `onAuthRequired` callback, который контекст-специфичен.
 - Тесты обязаны покрывать каждый контекст отдельно.
 
-Пример: middleware, изменённый для web, ломал авторизацию в другом контексте (напр. Telegram Mini App).
+См. инцидент SPW 27.04 (proxy.ts middleware ломал auth в TG App).
 
 ## 5. Запрос данных и состояние
 
@@ -112,7 +113,7 @@ export default async function Page() {
 
 ## 7. Стиль и инструментарий
 
-- **Package manager**: выбери один на проект (напр. `pnpm`) и не смешивай с `npm`/`yarn`.
+- **Package manager**: `pnpm` по умолчанию; `npm`/`yarn` запрещены в SPW-проектах.
 - **ESLint**: flat config (`eslint.config.mjs`), не `.eslintrc.*`. `eslint-config-next` обязателен.
 - **Prettier** как formatter; не использовать `eslint --fix` для форматирования.
 - **Tailwind v4** через `@tailwindcss/postcss`; CSS-in-JS не одобрен в новом коде.
@@ -154,7 +155,7 @@ export default async function Page() {
 5. Любой fetch-запрос изменён по таймаутам, retries, AbortController, headers (auth).
 6. Hotfix во время operator-driven smoke — **не исключение**, а ровно тот случай, когда review-gate критичен.
 
-Типичная причина регрессий: коммит без ревью в обход собственного же профилактического правила.
+См. инцидент SPW 27.04: дважды коммит без review нарушил prevention action из ERRORS 2026-04-27.
 
 ## 12. Multi-Context Smoke Matrix
 
@@ -166,7 +167,7 @@ export default async function Page() {
 | Telegram App | Playwright + mock `window.Telegram.WebApp` | Bearer auth, CloudStorage, MainButton |
 | WP-embed | Playwright iframe + postMessage mock | postMessage-bridge, iframe cookies (3rd-party) |
 
-Несинхронизированные фиксы (изменили `proxy.ts` для web, не проверили Telegram App) — типичная причина auth-регрессий. `review-gate` обязан считать отсутствие smoke хотя бы одного контекста блокирующим FAIL для auth-related PR.
+Несинхронизированные фиксы (изменили `proxy.ts` для web, не проверили TG App) — основная причина инцидента 27.04. `review-gate` обязан считать отсутствие smoke хотя бы одного контекста — блокирующий FAIL для auth-related PR.
 
 ## 13. Playwright Selector Stability
 
@@ -178,13 +179,13 @@ export default async function Page() {
 - `getByRole` только для нативных HTML-элементов (`button`, `link`, `heading`) — не для кастомных компонентов.
 - Любая массовая замена селекторов в E2E (≥5 файлов) требует review-gate с явным обоснованием в коммите (какая либа обновилась).
 
-Пример: мажорный апгрейд UI-библиотеки может сломать `getByRole(heading)` в компонентах — после апгрейда нужен migration-pass по селекторам.
+Источник: SPW 28.04 — апгрейд base-ui v4 сломал `getByRole(heading)` в `CardTitle`, потребовался migration-pass.
 
 ## 14. Conditional UI Hide/Show — обе ветки
 
 При условиях скрытия/показа форм submit/retry — обязательно покрывать **оба сценария**:
 
-❌ **Плохо** (скрыта одна из веток):
+❌ **Плохо** (Y-6 Stage 6 bug):
 ```tsx
 const showForm = allowSubmit && !lastResult;
 // `!lastResult` ловит ЛЮБОЙ установленный lastResult, включая wrong-answer
@@ -204,7 +205,9 @@ const showForm = allowSubmit && lastResult?.is_correct !== true;
 - Код-комментарий рядом с защитной проверкой **объясняет ОБА сценария** (happy + unhappy), не один.
 - При наличии `effectivelyBlocked` (server-side limit) — учитывать regex-detect: `blocked || /лимит|limit|exceed/i.test(submitErr)`.
 
-## 15. UX-flow rules
+Источник: SPW ERRORS 2026-05-04 — Y-6 Stage 6 form-hide bug.
+
+## 14. UX-flow rules (Y-5.2 SPW addition)
 
 При любом UI-изменении прочитать `ux-flow-rules.md` и пройти audit-checklist (R1–R8). Ключевые принципы:
 
@@ -213,7 +216,7 @@ const showForm = allowSubmit && lastResult?.is_correct !== true;
 - **R4 (forms parent setState):** В контролируемых формах parent setState из child onChange — через `queueMicrotask`, не синхронно (иначе React 18+ выкинет «Cannot update component while rendering»).
 - **R7 (auto-resolve):** Default/next auto-resolved где возможно (`useLearningLoop` → `router.push`, без UI-выбора пользователя).
 
-**Anti-pattern:**
+**Anti-pattern (видели в Y-5.2):**
 ```tsx
 // ❌ ContinueWidget на /courses/[uid] показывался после complete material —
 // promotion exit, лишний клик. R1 violation.
@@ -224,9 +227,9 @@ const next = await refetchNext();
 router.push(`/courses/${uid}/material/${next.material_id}`);
 ```
 
-Принцип: не плодить лишние экраны на пути пользователя.
+Источник: Y-5.2 SPW (2026-05-02) — оператор сообщил «не плодить лишние экраны».
 
-## 16. Проверочный пайплайн перед merge frontend changes
+## 15. Проверочный пайплайн перед merge frontend changes
 
 При любом merge UI-changes:
 1. `pnpm type-check` PASS (0 errors)

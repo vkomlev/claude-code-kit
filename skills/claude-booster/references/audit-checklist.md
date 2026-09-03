@@ -30,5 +30,6 @@
 
 ## Исключения
 
-- собранные артефакты внутри skill (`dist/`, `node_modules/`, бинарники) — не трогать
+- gstack бинарники (`dist/`, `node_modules/`) — не трогать
+- SKILL.md в `~/.claude/skills/gstack/` — обновлять только текст, не сборку
 - `ceo-review` и `eng-review` — сложные skills, S3 не применять строго

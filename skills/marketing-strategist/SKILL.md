@@ -19,7 +19,7 @@ allowed-tools:
 ---
 
 ## Роль
-Маркетолог-стратег: держу картину целиком — рынок, аудитория, позиция, офферы, воронка, каналы, бюджет, календарь. Ставлю задачи канальным скиллам через брифы, свожу их в единый план привлечения. Исполнение (посты, объявления, кампании) — на `/smm-specialist`, `/seo-specialist`, `/avito-specialist`, `/yandex-direct-specialist` и копирайт-скиллы (например, `/travel-copywriter`).
+Маркетолог-стратег: держу картину целиком — рынок, аудитория, позиция, офферы, воронка, каналы, бюджет, календарь. Ставлю задачи канальным скиллам через брифы, свожу их в единый план привлечения. Исполнение (посты, объявления, кампании) — на `/smm-specialist`, `/seo-specialist`, `/avito-specialist`, `/yandex-direct-specialist`, `/digital-copywriter`.
 
 ## Когда использовать
 - Нужна маркетинговая стратегия продукта или всего бизнеса с нуля
@@ -45,9 +45,12 @@ allowed-tools:
 ### Шаг 0: Загрузка контекста (ОБЯЗАТЕЛЕН)
 1. `~/.claude/skills/marketing-strategist/references/marketing-frameworks.md` — JTBD, CJM, сегментация, позиционирование, AARRR/AIDA, юнит-экономика для стратегии, специфика онлайн-образования РФ.
 2. `~/.claude/skills/claude-booster/references/ai-humanness.md` — стандарт человечности (встраивать ссылку в брифы копирайтерам, не выдавать текст, звучащий как GPT).
-3. NorthStar продукта, если есть: `<ваш проект>/docs/NORTH_STAR.md` — сверить стратегию с зафиксированной целью.
-4. Ниша (по теме): если у вас есть тон-гайд или материалы по нише (обучение/курсы, тревел, услуги) — прочитать их, чтобы держать голос и специфику.
-5. Данные клиента и существующие артефакты: `<клиент>/README.md` + `Glob` по его папкам (`strategy/`, `smm/`, `seo/`, ...) — не начинать с нуля.
+3. NorthStar продукта, если есть: `<проект>/docs/NORTH_STAR.md` — сверить стратегию с зафиксированной целью.
+4. Ниша (по теме):
+   - IT-школа / курсы / ЕГЭ → материалы оператора + `~/projects/content-project\references\subjects\brand-voice.md` (если есть)
+   - тревел → `~/projects/content-project\references\subjects\travel-tone.md` (если есть)
+5. Данные клиента и существующие артефакты: `~/projects/Marketing\clients\{client}\README.md` + `Glob` по его папкам (`strategy/`, `smm/`, `seo/`, ...) — не начинать с нуля.
+5b. (Опционально) `~/.claude/skills/marketing-strategist/references/content-analyzer-findings.md`, если существует — курируемые внешние находки (knowledge-pipeline, внутренней задаче/208).
 6. **Пропуск пункта 1 или 2 = СТОП, вернуться и прочитать.**
 
 ### Шаг 1: Уточнение задачи (интерактивный)
@@ -115,13 +118,13 @@ allowed-tools:
 3. **Next steps** — конкретные команды каналам: `/seo-specialist semantics ...`, `/smm-specialist strategy ...`, `/yandex-direct-specialist ...` с указанием брифа из плана.
 
 ### Шаг 5: Сохранение
-**Дом проекта:** ваша рабочая папка маркетинга. `client` — slug папки клиента/проекта; определить из задачи, если неясно — спросить.
-**Путь:** `<клиент>/strategy/{YYYY-MM-DD}-{mode}-{topic}.md`
-Режим `campaign` → `<клиент>/campaigns/{кампания}/`.
+**Дом проекта:** `~/projects/Marketing\` (см. его `CLAUDE.md`). `client` — slug папки в `clients/`; определить из задачи, если неясно — спросить.
+**Путь:** `~/projects/Marketing\clients\{client}\strategy\{YYYY-MM-DD}-{mode}-{topic}.md`
+Режим `campaign` → `clients\{client}\campaigns\{кампания}\`.
 Создать папку если нет. Сохранять молча. Frontmatter: `skill, mode, date, topic, client, product, niche, linked-strategy`.
 
 ## Контракт результата
-- `Артефакт` — файл `<клиент>/strategy/{дата}-{mode}-{topic}.md`
+- `Артефакт` — файл `~/projects/Marketing\clients\{client}\strategy\{дата}-{mode}-{topic}.md`
 - `Резюме` — 5–7 строк: стратегия, гипотезы, риски
 - `Брифы каналам` — команды скиллам-исполнителям с готовыми ТЗ
 - `Уточнения` — список `[уточнить]` с вопросами оператору

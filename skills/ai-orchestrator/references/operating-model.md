@@ -10,10 +10,10 @@
 3. Improvement contour
 - capture errors -> classify -> update rules/skills -> regression check
 
-## Context Levels (Claude-only)
-- minimal: routine deterministic execution (formatting, small edits, boilerplate, commits).
-- standard: medium complexity integration and structured planning (specs, plans, reviews).
-- full: architecture-level reasoning, complex debugging and final quality gate.
+## Tier Routing
+- Tier L: Cursor agents for routine deterministic execution.
+- Tier M: Codex for medium complexity integration and structured planning.
+- Tier H: Claude for architecture-level reasoning and final quality gate.
 
 ## Gates
 - `spec-gate`: objective, scope, acceptance, constraints are explicit.

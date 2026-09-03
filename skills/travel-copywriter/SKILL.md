@@ -43,12 +43,16 @@ allowed-tools:
 
 ### Шаг 0: Загрузка контекста (ОБЯЗАТЕЛЕН)
 1. Прочитать `~/.claude/skills/claude-booster/references/ai-humanness.md` — чеклист человечности, 12 AI-маркеров, стоп-лист канцелярита. **Критично для качества текста.**
-2. Если у проекта есть материалы бренда — прочитать их перед письмом (не изобретать тон заново):
-   - гайд по голосу/тону и запреты бренда (`voice-guide.md`, тревел-тон);
-   - шаблон под выбранный режим (`tg` / `vk` / `article` / `story` / `guide`), если он ведётся;
-   - глоссарий/терминологию, если релевантна.
-   Нет таких материалов — опирайся на ai-humanness.md и общие принципы жанра ниже.
-3. **Пропуск пункта 1 = СТОП, вернуться и прочитать.**
+2. Прочитать `~/projects/content-project\references\subjects\travel-tone.md` — тревел-тон, приёмы, стоп-лист штампов.
+3. Прочитать `~/projects/content-project\brand\voice-guide.md` — базовые запреты бренда.
+4. Прочитать шаблон по режиму:
+   - `tg` → `~/projects/content-project\templates\social\tg-travel.md`
+   - `vk` → `~/projects/content-project\templates\social\vk-travel.md`
+   - `article` → `~/projects/content-project\templates\article\travel-article.md`
+   - `story` → `~/projects/content-project\references\subjects\travel-tone.md` (секция "История / нарратив")
+   - `guide` → `~/projects/content-project\references\subjects\travel-tone.md` (секция "Мини-гид")
+5. Прочитать `~/projects/content-project\brand\glossary.md` — терминология (если релевантна).
+6. **Пропуск любого пункта = СТОП, вернуться и прочитать.**
 
 ### Шаг 1: Уточнение задачи
 Если в задаче не указано — спросить:
@@ -145,7 +149,7 @@ allowed-tools:
 ### Шаг 5: Сохранение в output/
 После выдачи текста пользователю — сохранить файл:
 
-**Путь:** `<путь к проекту>/output/{YYYY-MM-DD}-travel-copywriter-{mode}.md`
+**Путь:** `~/projects/content-project\output\{YYYY-MM-DD}-travel-copywriter-{mode}.md`
 
 **Формат имени файла:** `2026-04-09-travel-copywriter-tg.md`
 - `{YYYY-MM-DD}` — дата генерации

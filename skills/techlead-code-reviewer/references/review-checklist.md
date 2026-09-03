@@ -57,7 +57,7 @@
 - For any `raw SQL -> date field -> now comparison` path, are types normalized and guarded before comparison?
 
 ## Live API / External Write-Path Check
-- If a pipeline writes to an external API (e.g. a third-party API/CMS), is there at least one live smoke test (gated by env)?
+- If pipeline writes to external API (LMS, VK, WP), is there at least one live smoke test (gated by env)?
 - Is 100% mock-only coverage on external write-paths flagged as insufficient for PASS?
 - Does the config contain real values (not placeholders) with enabled: true?
 - Are runtime dependencies actually installed in target env (not just in requirements.txt)?
@@ -73,12 +73,12 @@
 ## Config Silent-Failure Check (registration gaps + fallback defaults)
 Two shapes of the same root cause — config going quietly wrong instead of failing loudly:
 - **Whitelist gap:** new env/config key registered only in `.env`/`.env.example`, not in the project's
-  config loader. A whitelist-style loader (e.g. `config.py::load_config()`) silently drops
+  config loader. A whitelist-style loader (e.g. CB `monolith/config.py::load_config()`) silently drops
   unregistered keys — the handler runs in a "quiet empty" mode instead of failing. Smoke assertion:
-  `assert "NEW_KEY" in load_config()`. Recurred repeatedly across projects.
+  `assert "NEW_KEY" in load_config()`. Recurred 3x in content-service (2026-03-09, 2026-04-22, 2026-07-01).
 - **Silent dev-fallback:** `os.environ.get(KEY) or "<dev-looking default>"` (localhost URL, hardcoded
   test API key/token) — a missing/unset env var in a real run falls back to a dev value instead of
-  failing. Caught only by an *independent* review of scripts that hit a real/prod target,
-  not by this checklist — treat as a gap this checklist must close.
+  failing. Caught only by an *independent* Codex review in content-service внутренней задаче (`scripts/tsk103_futurestep_attach.py`,
+  `scripts/smoke_b2_lms_import.py`), not by this checklist — treat as a gap this checklist must close.
   Correct shape: `os.environ[KEY]` (raises if unset) for any value used against a real/prod target.
 - Either shape on a key outside the whitelist or with a dev-looking fallback — automatic FAIL, not a style note.

@@ -22,7 +22,7 @@ allowed-tools:
 2. Найти последние JSONL-беседы проекта (`ls -lt ~/.claude/projects/{project-dir}/*.jsonl | head -3`).
 3. Извлечь: исходные цели, решения из `/ceo-review` и `/eng-review`, спек из `/spec-writer`.
 4. Зафиксировать как **контекстные якоря** — план не должен противоречить этим решениям без явного обоснования.
-5. **Смежные модули**: если проект многомодульный и вы ведёте документацию состояния смежных модулей (STATE/CHANGELOG/контракты) — прочитайте её перед планированием. План должен опираться на актуальные контракты, не на устаревший spec.
+5. **Cross-project memory** (если план затрагивает CB / LMS / SPW / tg-bot): прочитать `~/projects/content-service\docs\cross-project\STATE.md` + `CHANGELOG.md` (последние 14 дней) + `contracts/<свой>.md` + `contracts/<смежный>.md`. Триггеры и формат — см. [cross-project-memory-standard.md](../claude-booster/references/cross-project-memory-standard.md). План должен опираться на актуальный mirror контрактов, не на устаревший ADR/spec.
 
 ### Основные шаги
 1. Зафиксировать цель, границы задачи и явные не-цели.

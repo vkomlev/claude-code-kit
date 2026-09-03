@@ -42,7 +42,7 @@ Module A → Module B → Module A.
 ### Fabricated Persistence Identifiers
 Фиктивные ID (batch_id=0, sentinel FK, placeholder UUID) в production-путях.
 **Сигнал:** тесты проходят с mock, а в prod — FK violation или silent data corruption.
-**Правило:** запрещено явно (особенно в pipeline-проектах с записью в БД).
+**Правило content-service:** запрещено явно.
 
 ### Shared Mutable Global State
 Модули читают-пишут общий словарь / файл / глобальную переменную без синхронизации.
@@ -64,7 +64,7 @@ Module A → Module B → Module A.
 ### Missing Alembic Schema Isolation
 Версионная таблица в `public.alembic_version` вместо target-схемы.
 **Сигнал:** коллизии миграций между проектами.
-**Правило:** для мульти-схемных проектов задавать `version_table_schema='<ваша_схема>'` обязательно.
+**Правило content-service:** `version_table_schema='content_hub'` обязательно.
 
 ### Ambient Test Dependencies
 Тест опирается на тестовые данные, которые создал другой тест / среда.
@@ -73,7 +73,7 @@ Module A → Module B → Module A.
 
 ### Test Coverage в Тестах, но не в Entrypoints
 Валидатор работает в unit-тесте, но не вызывается в реальном коде.
-**Правило:** validator logic в реальных entrypoints, не только в тестах.
+**Правило content-service:** validator logic в реальных entrypoints, не только в тестах.
 
 ## Организационные
 

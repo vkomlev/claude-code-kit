@@ -17,7 +17,7 @@
 - [ ] Валидация входов на границах доверия (user, external API, LLM output)
 - [ ] SQL-инъекции / prompt-инъекции — защищены
 - [ ] Аутентификация и авторизация: кто что может, где enforced
-- [ ] Аудит-логи для чувствительных операций (writes в критичные таблицы, migrations)
+- [ ] Аудит-логи для чувствительных операций (writes в content_hub, migrations)
 - [ ] Зависимости: есть ли lock-файлы, известные CVE
 
 ## 3. Maintainability
@@ -64,7 +64,7 @@
 |------------------|--------|----------|
 | Scalability      | WATCH  | N+1 в /api/courses, growth 2x в квартал |
 | Security         | OK     | secrets в .env, валидация на входе |
-| Maintainability  | RISK   | дубликация write-пути к shared-таблице публикаций |
+| Maintainability  | RISK   | дубликация write-пути к content_hub.publications |
 | Performance      | OK     | latency budget соблюдён |
 | Deployment       | WATCH  | нет rollback для migration 0042 |
 | Documentation    | WATCH  | ARCHITECTURE.md отстал на 2 мес |

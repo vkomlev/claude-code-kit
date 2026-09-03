@@ -18,13 +18,13 @@
 - **Автор курса** — заливает материалы через VK/TG
 
 ### Внешние системы
-- **CMS / LMS** — источник истины по контенту (REST API)
-- **Видеохранилище** — загрузка и хранение видео (OAuth, file upload)
-- **Мессенджер** — канал уведомлений (bot API)
-- **PostgreSQL `app`** — основная БД (схема `app_content`)
+- **WordPress LMS** — источник истины по курсам и материалам (REST API)
+- **VK Video** — хранилище видео (OAuth, file upload)
+- **Telegram** — канал уведомлений (bot API)
+- **PostgreSQL `learn`** — основная БД (схема `content_hub`)
 
 ### Границы системы (что внутри)
-ContentPipeline — оркестрация pipeline: ingest → normalize → enrich → publish → sync
+content-service — оркестрация pipeline: ingest → normalize → enrich → publish → sync
 ```
 
 ## Level 2 — Container
@@ -40,15 +40,15 @@ ContentPipeline — оркестрация pipeline: ingest → normalize → en
 |-----------|------------|-----------------|
 | CLI orchestrator | Python | запускает pipeline, CLI для ручных операций |
 | Pipeline workers | Python | ingest/normalize/enrich/publish/sync stages |
-| app_content DB | PostgreSQL | source-of-truth для публикаций и link_map |
-| CMS API client | Python | чтение/запись в CMS / LMS |
-| Video adapter | Python | upload видео, получение ссылок |
+| content_hub DB | PostgreSQL | source-of-truth для публикаций и link_map |
+| WP API client | Python | чтение/запись в WordPress LMS |
+| VK adapter | Python | upload видео, получение ссылок |
 
 ### Ключевые связи
 - CLI → Pipeline workers (прямой вызов, in-process)
-- Pipeline → app_content (SQLAlchemy + Alembic, schema=app_content)
-- publish stage → CMS API (REST, auth Bearer)
-- enrich stage → Video adapter (OAuth, файлы через requests)
+- Pipeline → content_hub (SQLAlchemy + Alembic, schema=content_hub)
+- publish stage → WP API (REST, auth Bearer)
+- enrich stage → VK adapter (OAuth, файлы через requests)
 ```
 
 ## Level 3 — Component (опционально)
@@ -61,7 +61,7 @@ ContentPipeline — оркестрация pipeline: ingest → normalize → en
 - **IngestStage** — приём сырых материалов, нормализация метаданных
 - **NormalizeStage** — приведение к каноническим schemas
 - **EnrichStage** — догрузка видео/аудио через VK
-- **PublishStage** — запись в app_content + CMS
+- **PublishStage** — запись в content_hub + WP
 - **SyncStage** — сверка source-of-truth с целевыми системами
 
 Shared: `ContextAnchor`, `StageResult`, `BlastRadius` — общие контракты между stages.

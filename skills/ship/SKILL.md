@@ -36,6 +36,7 @@ allowed-tools:
 
 ### Шаг 0: Определить базовую ветку
 
+0. (Опционально) `references/content-analyzer-findings.md`, если существует — курируемые внешние находки по выпуску версий и публикации артефактов (knowledge-pipeline, внутренней задаче/208).
 1. `gh pr view --json baseRefName -q .baseRefName` — если успешно, использовать.
 2. `gh repo view --json defaultBranchRef -q .defaultBranchRef.name` — если PR нет.
 3. Fallback: `main`.

@@ -2,6 +2,8 @@
 
 Единые правила для публичных API-контрактов (HTTP/REST). Подключается из `tech-spec-composer`, `executor-pro`, `fastapi-api-developer`, `review-gate`, `techlead-code-reviewer`.
 
+Источник дефектов: `~/projects/LMS\docs\ai\ERRORS.md` 2026-04-28 #1, #2 (drift Y-1 ↔ Y-2), `~/projects/spw\` чаты 27-28.04 (404 на auth-путях), CB ERRORS 2026-03-14, 2026-04-22.
+
 ## 1. Frontend Route ≠ API Endpoint
 
 В спецификациях, ADR и коде различать **два слоя** именования:
@@ -18,7 +20,7 @@
 1. OpenAPI / FastAPI route definition
 2. spec/ТЗ-документ (`docs/spec/*.md`, `docs/tech-spec-*.md`)
 3. ADR (`docs/ai/adr/*.md`), если это архитектурное решение
-4. Документацию контрактов смежных модулей/репозиториев, если контракт читается из другого проекта (когда вы ведёте такую документацию)
+4. Cross-project mirror в `~/projects/content-service\docs\cross-project\contracts\<свой>.md`
 
 PR без этой синхронизации — **автоматически FAIL** в `review-gate`.
 
@@ -29,7 +31,7 @@ PR без этой синхронизации — **автоматически F
 ```bash
 # Найти все ссылки на старые пути в смежных репо
 for path in OLD_PATH_1 OLD_PATH_2; do
-  grep -r "$path" <корни смежных репозиториев> --include="*.{ts,tsx,py,md,yml,yaml}" \
+  grep -r "$path" ~/projects/{content-service,LMS,spw,tg-bot}/ --include="*.{ts,tsx,py,md,yml,yaml}" \
     --exclude-dir={node_modules,.next,__pycache__,.venv}
 done
 ```
@@ -42,7 +44,7 @@ done
 
 Запретный grep (должен возвращать 0 строк):
 ```bash
-grep -rE "https?://[a-z.]+\.example\.com|https?://localhost:[0-9]+" \
+grep -rE "https?://(learn|api|tg)\.example\.ru|https?://localhost:[0-9]+" \
   app/services/ app/core/ lib/ services/ --include="*.{py,ts,tsx,js}"
 ```
 
@@ -78,7 +80,7 @@ grep -nE "@router\.(get|post|put|patch|delete).*\{(user_id|attempt_id|session_id
 
 Моки в тестах не должны противоречить реальным платформенным ограничениям внешнего API. Конкретно:
 
-- VK community-token vs user-token: разные наборы доступных методов (например, `wall.get` недоступен community-token).
+- VK community-token vs user-token: разные наборы доступных методов. См. инцидент CB ERRORS 2026-04-22 (`wall.get` недоступен community-token).
 - Telegram bot vs userbot: разные наборы методов.
 - WP REST с `context=edit` vs `context=view`: разные поля в response.
 
@@ -108,7 +110,7 @@ Alembic-миграция (или эквивалент) — это **измене
 
 1. `docs/db-schema-*.md` (или эквивалентный schema-mirror) — реальный список таблиц/колонок/FK после миграции
 2. ADR, если миграция меняет smysl модели (added/removed/renamed entity)
-3. Документацию контрактов смежных модулей, если затронутая таблица читается/пишется из другого проекта (когда вы ведёте такую документацию)
+3. Cross-project mirror `~/projects/content-service\docs\cross-project\contracts\<свой>.md`, если затронутая таблица читается/пишется из другого проекта
 
 Команда проверки соответствия (выполнить в review-gate):
 ```bash
@@ -118,7 +120,7 @@ git diff --cached --name-only | grep -E "docs/.*-schema-.*\.md$"
 # Если первая команда не пуста, а вторая — пуста → блокирующий FAIL.
 ```
 
-Класс: Alembic-миграции без spec backsync создают drift между кодом и документацией.
+Источник: дельта-анализ 29.04 (CB content-service — Alembic миграции не сопровождались spec backsync, что создавало drift между кодом и документацией).
 
 ## 13. OAuth / Auth State Parameter Discipline
 
@@ -136,7 +138,7 @@ Mock в тестах должен покрывать:
 - expired state → 410/400
 - race condition: один state используется дважды
 
-Класс: в OAuth/linking-flow параметр `state` легко недооценить в ходе ревью; правило закрывает класс.
+Источник: дельта-анализ 29.04 (Y-3 VK linking flow — `state` parameter был переоценён в ходе ревью; правило закрывает класс).
 
 ## 14. SQL Formula Verification (window-functions, gap-detection, recursive CTE)
 
@@ -158,7 +160,7 @@ Mock в тестах должен покрывать:
 - Multi-day с gap=1 (streak обрывается).
 - Today_active vs today_inactive.
 
-Класс: формула streak `d - rn*1d` для DESC даёт streak=1 для всех multi-day users; баг ушёл бы на prod без edge-тестов.
+Источник: LMS ERRORS 2026-04-29 #2 — формула streak `d - rn*1d` для DESC давала streak=1 для всех multi-day users; bug пошёл бы на prod без edge-тестов.
 
 ## 15. Consumer Parity Check (cross-project новый тип/поле)
 
@@ -166,8 +168,8 @@ Mock в тестах должен покрывать:
 
 1. **Идентифицировать всех consumers** контракта через grep по схеме во всех связанных проектах:
    ```bash
-   for project in <корни связанных проектов>; do
-     grep -rn "<schema-name>\|<field-name>" "$project/" --include="*.{py,ts,tsx,md}"
+   for project in CB LMS SPW tg-bot; do
+     grep -rn "<schema-name>\|<field-name>" "~/projects/$project/" --include="*.{py,ts,tsx,md}"
    done
    ```
 2. **Для каждого consumer** проверить:
@@ -177,7 +179,7 @@ Mock в тестах должен покрывать:
 3. **Live smoke раз в фазу** на критичный path для каждого consumer (gated env: `<PROJECT>_LIVE_SMOKE=1`).
 4. **tech-spec-composer** обязан включать `Consumer Parity Check` в §«Критерии приёмки» при разблокировке нового типа.
 
-Класс: consumer читает старое имя поля из mock (`value` вместо `text` из openapi), пока новый тип задачи заблокирован — drift не проявляется, пока тип не разблокируют. Consumer Parity Check ловит drift на review-gate, а не в production smoke.
+Источник: SPW ERRORS 2026-05-04 — TA drift LMS↔tg-bot↔SPW. Stage 6 разблокировал TA в SPW (по openapi `text`), но tg-bot `result_human_view.py` читал `value` (старый mock). До Y-6 TA был заблокирован → drift не проявлялся. Fix: tg-bot `c4f1f05` (`response.get("text") or response.get("value")` + 2 guard-теста). Если бы Consumer Parity Check был обязательным — drift поймали бы при review-gate Stage 6, а не в production smoke.
 
 ## 16. Тест/проверка валидирует наблюдаемую истину, а не прокси
 
@@ -201,11 +203,11 @@ Mock в тестах должен покрывать:
   состоянию (заявка ушла из очереди, счётчик уменьшился), а не по «мутация вызвана». (Баги:
   «На проверке» считал по одному предикату, очередь — по другому; override продлевал лимит,
   но не закрывал заявку → очередь не сокращалась.)
-- **Живая проверка в браузере валидирует то же на проде:** реальные значения,
+- **Живая проверка (live-browser-testing) валидирует то же на проде:** реальные значения,
   консистентность счётчик↔список, завершённость потока — не «страница отрисовалась + 200».
 
-Класс (все прошли зелёные тесты, но упали на проде): Page-vs-array, inbox KeyError,
-off-by-one в маппинге имени, счётчик≠очередь, override не закрывает заявку.
+Источник: session 2026-07-19 (LMS/SPW teacher-портал: Page-vs-array, inbox KeyError,
+off-by-one student_name, workload≠queue, override-not-close — все прошли зелёные тесты).
 
 ## 11. Контрольный чеклист перед PASS
 

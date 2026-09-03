@@ -28,6 +28,7 @@ allowed-tools:
 1. Прочитать `~/.claude/projects/<project-slug>/memory/MEMORY.md` — контекст проекта
 2. Прочитать `~/.claude/skills/claude-booster/references/skills-registry.md` — ролевая модель skills
 3. Прочитать [references/project-context.md](references/project-context.md) — проектные ограничения
+4. (Опционально) `references/content-analyzer-findings.md`, если существует — курируемые внешние находки по маршрутизации/агентным практикам (knowledge-pipeline, внутренней задаче/208)
 
 ### Шаг 1: Разбор запроса
 1. Цель задачи одной фразой

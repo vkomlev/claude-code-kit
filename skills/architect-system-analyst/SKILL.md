@@ -32,12 +32,13 @@ allowed-tools:
 
 ### Шаг 0 — Якорь контекста
 Прочитать в таком порядке и не предлагать решений до завершения:
-0. **Cross-project memory** — если проект многомодульный и вы ведёте документацию состояния смежных модулей (STATE/CHANGELOG/contracts), прочитайте её перед правкой; drift между ADR и реализацией явно указывать в `Gaps`.
+0. **Cross-project memory** (если анализ затрагивает CB / LMS / SPW / tg-bot): прочитать `~/projects/content-service\docs\cross-project\STATE.md` + `CHANGELOG.md` (последние 14 дней) + `contracts/*.md` всех затронутых проектов. AS-IS строится на актуальных mirror'ах; drift между ADR и реализацией явно указывать в `Gaps`. Стандарт — [cross-project-memory-standard.md](../claude-booster/references/cross-project-memory-standard.md). Если противоречие ADR ↔ mirror — верить mirror.
 1. `~/.claude/CLAUDE.md` и `<project>/CLAUDE.md` — глобальные и проектные правила
 2. `~/.claude/projects/<project>/memory/MEMORY.md` — накопленная память по проекту
 3. Существующие `docs/`, `reviews/`, `docs/adr/` (если есть)
 4. `git log --oneline -30` и `git status` — последние изменения и in-flight работа
 5. Если есть — `README.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`
+6. (Опционально) `references/content-analyzer-findings.md`, если существует — курируемые внешние находки по архитектуре и выбору технологий (knowledge-pipeline, внутренней задаче/208)
 
 Если противоречия между памятью и текущим кодом — верить коду, пометить расхождения в `Gaps`.
 
@@ -128,7 +129,7 @@ allowed-tools:
 - Один ADR = одно решение. Принятые ADR не редактируются — пишется superseded-запись
 - Если gaps или NFR требуют подтверждения — статус `NOT_READY`, а не догадки
 - Не вводить micro-сервисы / event-bus / новую БД без явного ADR и anti-pattern-анализа
-- Для многомодульного/pipeline-проекта: соблюдать invariants из `<project>/.claude/CLAUDE.md` (pipeline, Alembic isolation, review-changes)
+- Для content-service: соблюдать invariants из `<project>/.claude/CLAUDE.md` (pipeline, Alembic isolation, review-changes)
 
 ## Обратная связь
 Проблема с этим skill → `/response-quality-coach` фиксирует инцидент в `~/.claude/skills/claude-booster/references/skills-errors.md` → `/claude-booster` применяет RCA (5 Whys + anti-bloat check) перед фиксом.

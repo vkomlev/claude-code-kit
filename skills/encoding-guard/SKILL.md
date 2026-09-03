@@ -20,7 +20,7 @@ allowed-tools:
 - Перед bulk-правками текстовых файлов через PowerShell/bash
 - После git merge/rebase с конфликтами в файлах на кириллице
 - Подозрение на mojibake (артефакты `??`, `Ð°`, `â€"`, `Ð¡Ð»Ð°Ð²Ð°`)
-- Миграция правил и конфигов между форматами с файлами в UTF-8
+- Миграция правил (Cursor/Codex → Claude) с файлами в UTF-8
 - Периодический аудит проекта на целостность кодировки
 
 ## Порядок работы
@@ -95,4 +95,4 @@ Out-File -Encoding utf8 -FilePath <file>
 - **Не продолжать правки при mojibake** — сначала восстановление
 
 ## Обратная связь
-Проблема с этим skill → `/response-quality-coach` фиксирует дефект и предлагает минимальную правку инструкции по протоколу RCA (5 Whys + проверка на раздувание).
+Проблема с этим skill → `/response-quality-coach` фиксирует инцидент в `~/.claude/skills/claude-booster/references/skills-errors.md` → `/claude-booster` применяет RCA (5 Whys + anti-bloat check) перед фиксом.

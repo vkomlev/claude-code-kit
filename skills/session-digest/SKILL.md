@@ -5,7 +5,7 @@ description: |
   Технический skill: анализ диалогов Claude Code за дату/диапазон и
   суммаризация по задачам/темам. Читает ~/.claude/projects/*.jsonl,
   выдаёт markdown-дайджест + YAML блок для подачи в другие skills
-  (например, в копирайт-скилл). Фильтры: дата, проект.
+  (например, digital-copywriter reality). Фильтры: дата, проект.
 allowed-tools:
   - Read
   - Write
@@ -22,7 +22,7 @@ allowed-tools:
 - Нужна сводка "что я делал с AI за день / неделю / диапазон"
 - Подготовка контента (реалити-шоу, блог-пост про процесс, еженедельный отчёт)
 - Ретроспектива по конкретному проекту
-- Приём сессии в pipeline (вход для копирайт-скилла или ретроспективы)
+- Приём сессии в pipeline (вход для `digital-copywriter reality` или `retro`)
 - Быстрое "что мы уже обсудили" по теме за период
 
 ## Параметры вызова
@@ -42,15 +42,17 @@ allowed-tools:
 | Алиас | Путь |
 |---|---|
 | `all` (по умолчанию) | Все проекты |
-| произвольный slug | Имя папки проекта в `~/.claude/projects/` |
-
-Можно завести свои алиасы под пути к вашим проектам (например, `myapp` → `<путь к вашему проекту>`), но это опционально — по умолчанию хватает slug папки.
+| `content-project` | `~/projects/content-project` |
+| `it-businessman` | `~/projects/course-project` |
+| `lms` | `~/projects/LMS` |
+| `ide-booster` | `~/projects/IDE_booster` |
+| произвольный slug | Имя папки в `~/.claude/projects/` |
 
 ### Примеры
 - `/session-digest today` — сегодня, все проекты
-- `/session-digest yesterday myapp` — вчера только проект `myapp`
+- `/session-digest yesterday content-project` — вчера только content-project
 - `/session-digest last-7d` — неделя, всё
-- `/session-digest 2026-04-15..2026-04-20 myapp` — диапазон, только один проект
+- `/session-digest 2026-04-15..2026-04-20 it-businessman` — диапазон, только курс
 
 ## Порядок работы
 
@@ -67,7 +69,7 @@ allowed-tools:
 ```bash
 # Найти папку проекта
 ls ~/.claude/projects/
-# Slug для project path: путь к проекту → имя папки (диск в upper case, `\` и `:` → `-`)
+# Slug для project path: ~/projects/content-project → D--Work-content-project
 ```
 
 1. Собрать список целевых JSONL-файлов через Glob:
@@ -153,7 +155,7 @@ ls ~/.claude/projects/
 - Write × N
 - Bash × N
 - WebSearch × N
-- Skills: /имя-скилла × N, /другой-скилл × N
+- Skills: /travel-copywriter × N, /claude-booster × N
 
 ## Метрики периода
 - User-сообщений: {N}
@@ -187,12 +189,12 @@ session-digest:
 
 ### Шаг 6: Сохранение
 
-**Путь:** `<путь к вашему проекту>/output/digest/{YYYY-MM-DD}-digest-{scope}.md`
+**Путь:** `~/projects/content-project\output\digest\{YYYY-MM-DD}-digest-{scope}.md`
 
 **Примеры:**
 - `2026-04-20-digest-today-all.md`
-- `2026-04-20-digest-last-7d-myapp.md`
-- `2026-04-20-digest-2026-04-15_2026-04-20-myapp.md`
+- `2026-04-20-digest-last-7d-content-project.md`
+- `2026-04-20-digest-2026-04-15_2026-04-20-it-businessman.md`
 
 Создать директорию `output/digest/` если нет.
 
@@ -211,12 +213,13 @@ session-digest:
 
 ## Интеграция с другими skills
 
-### Подача в копирайт-скилл
+### Подача в `digital-copywriter reality`
 ```
 /session-digest yesterday
 # → output/digest/2026-04-20-digest-yesterday-all.md
 
-# копирайт-скилл читает последний дайджест из output/digest/ и пишет пост
+/digital-copywriter vk reality
+# skill читает последний дайджест из output/digest/ и пишет пост
 ```
 
 ### Подача в `retro`
@@ -241,4 +244,4 @@ session-digest:
 - Общий объём JSONL > 500 МБ → спросить подтверждение, предложить сузить диапазон/проект
 
 ## Обратная связь
-Проблема с этим skill → `/response-quality-coach` фиксирует дефект и предлагает минимальную правку инструкции (RCA: 5 Whys + проверка на раздувание перед фиксом).
+Проблема с этим skill → `/response-quality-coach` фиксирует инцидент в `~/.claude/skills/claude-booster/references/skills-errors.md` → `/claude-booster` применяет RCA (5 Whys + anti-bloat check) перед фиксом.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Summarize FastAPI app logs for fast debugging cycles.
+"""Summarize LMS API logs for fast debugging cycles.
 
 Parses common app.log lines:
 - generic leveled logs: "<ts> | <LEVEL> | <logger> | <message>"

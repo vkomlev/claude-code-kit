@@ -1,13 +1,13 @@
 # Log Debug Playbook
 
 ## Inputs
-- Primary log file: `logs/app.log` (в корне вашего проекта)
+- Primary log file: `~/projects/LMS/logs/app.log`
 - Optional rotated logs: `app.log.1`, `app.log.2`, etc.
 
 ## Fast Triage
 Run:
 ```powershell
-python scripts/log_triage.py --log-file logs/app.log --tail 4000 --top 10
+python ~/projects/IDE_booster/skills/fastapi-api-developer/scripts/log_triage.py --log-file ~/projects/LMS/logs/app.log --tail 4000 --top 10
 ```
 
 ## What To Extract

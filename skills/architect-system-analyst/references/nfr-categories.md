@@ -80,7 +80,7 @@
 - Backup: ежедневный pg_dump в `backups/`, тестируется еженедельно
 
 ### Security
-- Secrets: `.env` (например, `APP_DB_DSN`), не в git
+- Secrets: `.env` + `CB_CONTENT_HUB_DSN`, не в git
 - Input validation: pydantic на границе CLI, SQL параметризован
 - Threat: LLM output не выполняется как код, валидируется против schema
 

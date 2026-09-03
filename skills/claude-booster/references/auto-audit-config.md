@@ -6,14 +6,14 @@
 > общие для всех заданий этой машины: планировщик стартует в `C:\Windows\System32` (падает
 > всё, что работает с путями от cwd), `$ErrorActionPreference = "Stop"` убивает обёртку на
 > stderr до логирования, History заданий выключена, `schtasks` из Git Bash требует
-> `MSYS_NO_PATHCONV=1`.
+> `MSYS_NO_PATHCONV=1`. Стоили двух ложных диагнозов в внутренней задаче.
 
 ## Команда запуска
 
 В чате Claude Code: `/claude-booster weekly-audit` (или `auto-audit`).
 
 Запускает Режим E claude-booster:
-1. Читает свежие JSONL-чаты за 7 дней по твоим проектам.
+1. Читает свежие JSONL-чаты за 7 дней по 4 проектам.
 2. Читает ERRORS.md проектов на новые записи.
 3. Параллельно анализирует через 4 Explore-агента.
 4. Кластеризует находки, применяет автоправки (только Edit, ≥2 эпизода для триггера).
@@ -22,13 +22,13 @@
 ## Параметры окружения
 
 - **Период:** 7 дней по умолчанию. Override: `/claude-booster auto-audit --since=2026-04-29 --until=2026-05-01`.
-- **Проекты по умолчанию:** твои активные проекты (задай список под себя). Skip-rule: проект без JSONL в окне периода — пропускается (защита от шума single-session паттернов). Override: `--projects=имя1,имя2`.
+- **Проекты по умолчанию (8 активных):** content-service, LMS, SPW, tg-bot, content-project, CyberGuru-EGE, IT-Businessman, IDE-booster. Skip-rule: проект без JSONL в окне периода — пропускается (защита от шума single-session паттернов). Override: `--projects=LMS,SPW`.
 - **Auto-fix threshold:** ≥2 эпизода одного класса в одном skill. Override: `--threshold=1` (агрессивный режим для onboarding новых проектов).
 
 ## TG-уведомления (через @plugin_telegram_telegram)
 
 **Канал:** Telegram-плагин Claude Code (`mcp__plugin_telegram_telegram__reply`).
-**Chat ID оператора:** `<CHAT_ID_ОПЕРАТОРА>` (из `~/.claude/channels/telegram/access.json`).
+**Chat ID оператора:** `344276500` (из `~/.claude/channels/telegram/access.json`).
 **Допущения:** оператор уже выполнил `/telegram:configure` и `/telegram:access` для allowlist.
 
 **Что отправляется:**
@@ -49,7 +49,7 @@
 **Fallback при недоступном TG-плагине** (e.g., headless-сессия не загружает MCP):
 1. Зафиксировать в improvement-log.md: «TG notification skipped: plugin unavailable».
 2. Использовать встроенный `notifyOnCompletion` Claude Code (in-app).
-3. Опциональный workaround: bot token в env + `curl -X POST https://api.telegram.org/bot$TG_BOT_TOKEN/sendMessage -d chat_id=<CHAT_ID_ОПЕРАТОРА> -d text=...` (но требует хранения токена, что нарушает правила безопасности).
+3. Опциональный workaround: bot token в env + `curl -X POST https://api.telegram.org/bot$TG_BOT_TOKEN/sendMessage -d chat_id=344276500 -d text=...` (но требует хранения токена, что нарушает правила безопасности).
 
 ## Способы планирования
 
@@ -62,7 +62,7 @@
 Параметры:
 - **Name:** `weekly-skills-audit`
 - **Cron:** `0 9 * * MON` — каждый понедельник 09:00
-- **Action:** запустить chat session с командой `/claude-booster weekly-audit` в рабочем проекте
+- **Action:** запустить chat session с командой `/claude-booster weekly-audit` в проекте `IDE_booster`
 - **Notification:** уведомление пользователю о завершении (с резюме отчёта)
 
 ### Способ B: Windows Task Scheduler — TG-trigger (рекомендуется как primary после провала Способа A в headless)
@@ -72,7 +72,7 @@
 **Готовый скрипт:** `~/.claude/scripts/weekly-audit-trigger.ps1`
 
 Что делает:
-1. Собирает stat за 7 дней по твоим проектам: размер JSONL-чатов, кол-во записей ERRORS.md за период.
+1. Собирает stat за 7 дней по 8 проектам: размер JSONL-чатов, кол-во записей ERRORS.md за период.
 2. Формирует summary без LLM (factual, не интерпретация).
 3. Отправляет в Telegram через `https://api.telegram.org/bot<TOKEN>/sendMessage`.
 4. Логирует в `~/.claude/logs/weekly-audit-trigger-YYYY-MM-DD.log`.
@@ -85,7 +85,7 @@
    ```powershell
    [Environment]::SetEnvironmentVariable('TG_BOT_TOKEN', '<token>', 'User')
    # Опционально:
-   [Environment]::SetEnvironmentVariable('TG_CHAT_ID', '<CHAT_ID_ОПЕРАТОРА>', 'User')
+   [Environment]::SetEnvironmentVariable('TG_CHAT_ID', '344276500', 'User')
    ```
 3. **Перезагрузить терминал** (чтобы env подхватилась).
 4. **Проверить отправку вручную:**
@@ -97,7 +97,7 @@
 **Регистрация в Windows Task Scheduler:**
 ```powershell
 $action = New-ScheduledTaskAction -Execute "powershell.exe" `
-    -Argument "-NoProfile -ExecutionPolicy Bypass -File $env:USERPROFILE\.claude\scripts\weekly-audit-trigger.ps1"
+    -Argument "-NoProfile -ExecutionPolicy Bypass -File ~/.claude\scripts\weekly-audit-trigger.ps1"
 $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday -At 9am
 $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -DontStopIfGoingOnBatteries -AllowStartIfOnBatteries
 Register-ScheduledTask -TaskName "Claude-WeeklyAuditTrigger" `
@@ -150,7 +150,7 @@ Unregister-ScheduledTask -TaskName "Claude-WeeklyAuditTrigger" -Confirm:$false
 
 ## Метрики эффективности (review-after-N-runs)
 
-После каждого прогона полезно фиксировать метрики (например, в `improvement-log.md`):
+После каждого прогона записываются метрики в `references/auto-audit-metrics.md`:
 - Кластеров обнаружено
 - Автоправок применено
 - OPEN записей создано

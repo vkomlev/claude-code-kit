@@ -48,8 +48,9 @@ Markdown-таблица с минимум 5 колонками:
 | **EG** | `/encoding-guard` | UTF-8 sanity |
 | **CA** | `/context-auditor` | Соответствие исходным целям |
 | **TS** | `/tech-spec-composer` | ТЗ для дочерних под-задач |
+| **PIPE** | `/pipeline-operator` | Operator-инициируемые pipelines |
 | **SHIP** | `/ship` | Release workflow |
-| **TGD** | `/travel-copywriter`/etc. | Контент по доменам |
+| **TGD** | `/digital-copywriter`/`/travel-copywriter`/etc. | Контент по доменам |
 
 Расширять список при необходимости из актуального `skills-registry.md`.
 
@@ -128,10 +129,12 @@ Markdown-таблица с минимум 5 колонками:
 
 ## 10. История изменений
 
-- **v1.0** — стандарт создан после того, как несколько booster-skill'ов имели разрозненные слабые требования о skill-routing. Anti-bloat решение: единый reference + 1-3 строки усиления в каждом skill вместо клонирования требования.
+- **2026-04-27 v1.0** — стандарт создан после паттерна, выявленного в `~/projects/content-service\docs\plans\change-plan-spw-stream-y-v1.md §7`. Источник: рукотворный пример мастер-таблицы Stream Y/X. RCA: три booster-skill'а имели слабые требования о skill-routing, разрозненные. Anti-bloat решение: единый reference + 1-3 строки усиления в каждом из трёх skills вместо клонирования требования.
 
 ## 11. Связанные документы
 
 - `~/.claude/skills/claude-booster/references/skills-registry.md` — актуальный список skills
 - `~/.claude/skills/claude-booster/references/standard.md` — общий стандарт skills
 - `~/.claude/skills/claude-booster/references/booster-shared.md` — общие правила
+- Пример применения: `~/projects/content-service\docs\plans\change-plan-spw-stream-y-v1.md §7`
+- Пример применения: `~/projects/content-service\docs\tech-specs\tech-spec-X-wp-content-refresh-v1.md`

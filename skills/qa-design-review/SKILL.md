@@ -1,11 +1,16 @@
 ---
 name: qa-design-review
-version: 1.1.0
+version: 1.3.0
 description: |
   Дизайн-QA глазами дизайнера: находит визуальные несоответствия, проблемы с отступами,
-  иерархией, AI slop паттерны и медленные интеракции — и исправляет их. Итеративно
-  исправляет баги с атомарными коммитами и скриншотами до/после. Для режима
-  только-отчёт используйте /plan-design-review.
+  иерархией, AI slop паттерны и медленные интеракции — и исправляет их. Оценивает и
+  чинит также понятность для нового пользователя (discoverability) и количество
+  кликов/шагов до целевого действия. Итеративно исправляет баги с атомарными коммитами
+  и скриншотами до/после. Также умеет Consistency-режим — сквозной аудит+фикс
+  UX-консистентности уже живого многоэкранного продукта/портала, построенного
+  инкрементально. Для режима только-отчёт используйте /plan-design-review. Для
+  функциональной полноты (доведён ли функционал до конца, все ли ожидаемые действия
+  доступны) — отдельный скилл /feature-completeness-review, это не входит в дизайн-QA.
 allowed-tools:
   - Bash
   - Read
@@ -35,6 +40,8 @@ You are a senior product designer AND a frontend engineer. Review live sites wit
 **If no URL is given and you're on a feature branch:** Automatically enter **diff-aware mode** (see Modes below).
 
 **If no URL is given and you're on main/master:** Ask the user for a URL.
+
+**Detect Consistency mode:** if the target is an already-live, built, multi-screen product/portal assembled incrementally (different sessions/features over time) — not a marketing site, not a first launch — and the ask is cross-screen consistency rather than first impression, enter **Consistency mode** (see Modes below) and say so to the user in one line before starting.
 
 **Check for DESIGN.md:**
 
@@ -246,6 +253,9 @@ When on a feature branch, scope to pages affected by the branch changes:
 ### Regression (`--regression` or previous `design-baseline.json` found)
 Run full audit, then load previous `design-baseline.json`. Compare: per-category grade deltas, new findings, resolved findings. Output regression table in report.
 
+### Consistency (`--consistency`, auto-detected)
+For an already-built, live, multi-screen product/portal assembled incrementally by different sessions over time, where a design system already exists (documented or not). Skips/collapses First Impression and AI Slop scoring (not a marketing-site concern) — instead runs a pattern-level interface inventory and cross-screen drift audit, then fixes drift findings grouped by pattern type rather than by screen. Full methodology, drift-severity rules, fix-grouping, and report format: `references/consistency-audit-mode.md`.
+
 ---
 
 ## Phase 1: First Impression
@@ -298,6 +308,8 @@ Structure findings as an **Inferred Design System**:
 - **Spacing Patterns:** sample padding/margin values. Flag non-scale values.
 
 After extraction, offer: *"Want me to save this as your DESIGN.md? I can lock in these observations as your project's design system baseline."*
+
+**In Consistency mode:** don't re-derive a system from scratch — read the existing DESIGN.md/tokens (or extract once from the most canonical/mature screen) and treat it as a fixed baseline. The rest of the audit checks every other screen against it — see `references/consistency-audit-mode.md`.
 
 ---
 
@@ -442,6 +454,26 @@ The test: would a human designer at a respected studio ever ship this?
 - Fonts: `font-display: swap`, preconnect to CDN origins
 - No visible font swap flash (FOUT) — critical fonts preloaded
 
+**11. Learnability & Discoverability** (8 items — feeds Usability Score, not Design Score)
+- Primary action for the page's core purpose is visible without scrolling
+- Icon-only controls have a text label or native tooltip — no guessing what an icon does
+- Interface terminology matches the user's mental model, not internal/backend jargon
+- First-time-visitor test: could someone who has never seen this screen identify the one thing to do next within ~5 seconds? (apply on landing/dashboard-type screens)
+- Empty states explain what will appear here and how to make it appear (not just tone — actual orientation for someone who's never seen populated state)
+- No functionality hidden behind non-obvious gestures (right-click-only menus, hover-only reveals) without a visible hint
+- Same icon means the same action everywhere in the product (cross-check with Consistency mode if active)
+- Non-obvious controls have help/tooltip text — not required everywhere, only where purpose isn't self-evident from label + icon
+
+**12. Interaction Efficiency — click/step count** (8 items — feeds Usability Score, not Design Score)
+- Count actual clicks/screens/scrolls from a natural entry point (dashboard/home) to each key target action — walk it in the browser via Phase 4, don't estimate
+- Primary, frequent actions for this user role reachable in <=3 clicks
+- No redundant confirmation step for non-destructive, easily-undoable actions
+- Decision points don't dump unlabeled choices on the user at once (Hick's Law — flag >7-9 peer options with no grouping/search)
+- Interactive targets are large/close enough that the click itself isn't the bottleneck (Fitts's Law — tiny/far targets for frequent actions)
+- Forms/flows don't re-ask for information the system already has
+- No unnecessary intermediate confirmation screens before content the user explicitly navigated to
+- Completing a multi-step task doesn't force repeated round-trips to a previous screen for missing shortcuts
+
 ---
 
 ## Phase 4: Interaction Flow Review
@@ -457,6 +489,7 @@ Evaluate:
 - **Transition quality:** Are transitions intentional or generic/absent?
 - **Feedback clarity:** Did the action clearly succeed or fail? Is the feedback immediate?
 - **Form polish:** Focus states visible? Validation timing correct? Errors near the source?
+- **Step count (Category 12):** Log "Steps: N" per flow — the actual number of clicks/screens from entry point to completion. This is the raw data behind the Usability Score, not a separate pass.
 
 ---
 
@@ -468,6 +501,8 @@ Compare screenshots and observations across pages for:
 - Component reuse vs one-off designs (same button styled differently on different pages?)
 - Tone consistency (one page playful while another is corporate?)
 - Spacing rhythm carries across pages?
+
+**This is the quick pass.** For a dedicated Consistency-mode audit of an already-live, incrementally-built multi-screen product, use the full pattern-inventory + drift-scoring methodology in `references/consistency-audit-mode.md` instead of these 5 bullets — it replaces this phase, not supplements it.
 
 ---
 
@@ -484,6 +519,7 @@ Compare screenshots and observations across pages for:
   "url": "<target>",
   "designScore": "B",
   "aiSlopScore": "C",
+  "usabilityScore": "B",
   "categoryGrades": { "hierarchy": "A", "typography": "B", ... },
   "findings": [{ "id": "FINDING-001", "title": "...", "impact": "high", "category": "typography" }]
 }
@@ -491,9 +527,10 @@ Compare screenshots and observations across pages for:
 
 ### Scoring System
 
-**Dual headline scores:**
-- **Design Score: {A-F}** — weighted average of all 10 categories
+**Triple headline scores:**
+- **Design Score: {A-F}** — weighted average of the 10 visual/interaction categories (1-10)
 - **AI Slop Score: {A-F}** — standalone grade with pithy verdict
+- **Usability Score: {A-F}** — standalone grade from categories 11-12 (Learnability & Discoverability, Interaction Efficiency). Same grading rule as AI Slop: independent of the Design Score weighted average, doesn't require reweighing categories 1-10.
 
 **Per-category grades:**
 - **A:** Intentional, polished, delightful. Shows design thinking.
@@ -543,7 +580,7 @@ Tie everything to user goals and product objectives. Always suggest specific imp
 
 ## Important Rules
 
-1. **Think like a designer, not a QA engineer.** You care whether things feel right, look intentional, and respect the user. You do NOT just care whether things "work."
+1. **Think like a designer, not a QA engineer.** You care whether things feel right, look intentional, and respect the user. You do NOT just care whether things "work." Categories 11-12 (Learnability, Interaction Efficiency) are still about *feel* — how discoverable and how many steps, not whether a button's handler is wired correctly. Whether a feature is functionally whole (all expected actions present, nothing half-built) is out of scope here — see `/feature-completeness-review`.
 2. **Screenshots are evidence.** Every finding needs at least one screenshot. Use `computer{action:"zoom"}` on the problem region to highlight elements up close when a full-page shot isn't specific enough.
 3. **Be specific and actionable.** "Change X to Y because Z" — not "the spacing feels off."
 4. **Never read source code.** Evaluate the rendered site, not the implementation. (Exception: offer to write DESIGN.md from extracted observations.)
@@ -594,6 +631,10 @@ Mark findings that cannot be fixed from source code (e.g., third-party widget is
 ## Phase 8: Fix Loop
 
 For each fixable finding, in impact order:
+
+**In Consistency mode:** group fixes by pattern type, not by screen — see `references/consistency-audit-mode.md` for when a structural fix (shared component/utility) is warranted over N per-screen patches, and the adjusted self-regulation cadence for non-CSS structural fixes.
+
+**Category 12 (Interaction Efficiency) findings are often NOT CSS-only.** Removing a redundant confirmation step, moving a buried action higher in the flow, or collapsing a multi-screen path is a behavioral/structural change, not styling. Classify these as JSX/TSX-component changes in the 8f risk heuristic (not "CSS-only, +0%"), even when the diff looks small.
 
 ### 8a. Locate source
 
@@ -687,6 +728,8 @@ After all fixes are applied:
 Write the report to:
 
 **Local:** `.design-artifacts/design-reports/design-audit-{domain}-{YYYY-MM-DD}.md`
+
+**Consistency mode:** include the Consistency Matrix (pattern type × screen, drift flags) as its own section before the standard Findings list — see `references/consistency-audit-mode.md` for the table format.
 
 **Per-finding additions** (beyond standard design audit report):
 - Fix Status: verified / best-effort / reverted / deferred

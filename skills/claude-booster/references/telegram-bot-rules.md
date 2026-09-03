@@ -1,8 +1,8 @@
 # Telegram Bot Rules (aiogram + aiogram-dialog + Redis FSM)
 
-Единые правила для Telegram-ботов. Подключается из `executor-pro`, `executor-lite`, `techlead-code-reviewer`, `qa-fix`, `tech-spec-composer`, `telegram-ux-flow-designer`.
+Единые правила для Telegram-ботов. Подключается из `executor-pro`, `executor-lite`, `techlead-code-reviewer`, `qa-fix`, `tech-spec-composer`, `telegram-ux-flow-designer`, `tg-bot-developer` (project-local).
 
-Правила выведены из реальных дефектов aiogram-ботов: нерабочие условия `~field` в aiogram-dialog, FSM lock contention, zombie review states, legacy escape-hatch эндпоинты.
+Источник дефектов: tg-bot ERRORS 2026-03-03 (`~next_empty` aiogram-dialog), tg-bot чаты 30.04-01.05 (Y-4 Stage 3+4: FSM lock contention, zombie review states, legacy `/manual-check` escape-hatch).
 
 ## 1. aiogram-dialog: запрет «магических» условий
 
@@ -16,7 +16,7 @@
 - Дефолт в `.get()` — обязателен (защита от `KeyError` при первом рендере).
 - Unit-тест на каждое нетривиальное условие через `MockDialogManager`.
 
-Пример: `when="~next_empty"` скрывал кнопку всегда → соответствующий шаг не работал в проде.
+См. инцидент tg-bot 2026-03-03: `when="~next_empty"` скрывал кнопку всегда → `Phase 1 next` не работал в проде.
 
 ## 2. FSM lock contention и TTL
 
@@ -29,7 +29,7 @@
 - Молчаливый release при таймауте — обязателен audit-log с reason.
 
 ### Обязательно
-- TTL для review/grade flow: **300 сек минимум** (типичный кейс: 180 сек не хватало, поднять до 300 после 409 contention).
+- TTL для review/grade flow: **300 сек минимум** (tg-bot Y-4 Stage 3 — поднятие с 180 до 300 после 409 contention).
 - Конфиг TTL через env: `REVIEW_NEXT_TTL_SEC=300`, не hardcode.
 - Negative тест: симулировать concurrent `/grade` от двух teacher'ов на одну review → один получает 200, второй 409 с `Retry-After`.
 - Negative тест: симулировать lost-claim (process killed mid-review) → next `/next` через TTL+10s освобождает claim.
@@ -49,7 +49,7 @@ Review/task запись в БД с inconsistent fields:
 
 ### Обязательно
 - Periodic cleanup job (raw SQL `WHERE checked_at IS NOT NULL AND is_correct IS NULL AND checked_at < now() - interval '1 hour'`) → reset to `pending`.
-- Migration при удалении legacy endpoint — backfill всех текущих zombie rows.
+- Migration при удалении legacy endpoint — backfill всех текущих zombie rows (rid=10, rid=11 в tg-bot Y-4).
 - Single transactional path для grade (`db.begin_nested()` для savepoint, rollback всё или commit всё).
 
 ## 4. callback_data discipline
@@ -69,7 +69,7 @@ Review/task запись в БД с inconsistent fields:
 
 ## 5. Multi-button UX (forbidden controls)
 
-Пример: в next-режиме `/grade` лишняя кнопка `⬅️ К списку` обходила обязательный grade-flow и оставляла lock.
+См. tg-bot ERRORS 2026-03-03 #2 + #3: next-mode `/grade` обнаруживал лишнюю кнопку `⬅️ К списку`, обходящую обязательный grade-flow и оставляющую lock.
 
 ### Запрещены в next/queue режиме
 - Secondary navigation (`⬅️ К списку`, `🏠 Главное меню`) во время активного claim — обходит release.
@@ -82,19 +82,19 @@ Review/task запись в БД с inconsistent fields:
 - `techlead-code-reviewer` — `FAIL` если в next-mode UI render содержит forbidden controls.
 - Release claim на **всех** путях выхода из dialog'а: `on_close`, `on_back`, `/start`, `/cancel`, timeout.
 
-## 6. Потребление backend API из бота
+## 6. Cross-project API consumption (tg-bot → LMS)
 
-Бот вызывает backend API через `aiohttp`/`httpx`. Контракт меняется на backend — бот должен следовать.
+tg-bot вызывает LMS API через `aiohttp`/`httpx`. Контракт меняется в LMS — tg-bot должен следовать.
 
 ### Запрещены
-- Hardcoded URL пути backend (`/api/v1/auth/magic-link/request`) — должны идти из контракт-mirror (`contracts/*.md`).
-- Mock-client backend с устаревшим response shape — drift не ловится.
-- Bot-token полномочия для cross-bot операций (один бот отправляет от имени другого) — нарушает API design.
+- Hardcoded LMS URL пути (`/api/v1/auth/magic-link/request`) — должны идти из `contracts/lms-api.md` mirror.
+- Mock LMS client с устаревшим response shape — drift не ловится.
+- Bot-token полномочия для cross-bot операций (teacher_bot отправляет от methodist_bot) — нарушает API design.
 
 ### Обязательно
-- При обновлении backend endpoint — контракт-mirror бота обновляется в том же коммите.
-- Live smoke на критичный path (claim → grade → release) минимум раз в фазу — gated по env-флагу.
-- Mock-client backend синхронизируется с реальным `openapi.json` через автогенерацию.
+- При обновлении LMS endpoint — tg-bot контракт-mirror в `contracts/tg-lms.md` обновляется в том же коммите (cross-project gate).
+- Live smoke на критичный path (claim → grade → release) минимум раз в фазу — gated по env `TG_BOT_LIVE_SMOKE`.
+- Mock LMS client синхронизируется с реальным `openapi.json` через автогенерацию (раз в неделю — см. §automation).
 
 ## 7. Encoding и русский язык
 
@@ -114,21 +114,21 @@ Review/task запись в БД с inconsistent fields:
 - [ ] Zombie state cleanup job + savepoint pattern для grade/claim
 - [ ] callback_data ≤ 64 байт (unit-тест на pack length)
 - [ ] Forbidden Controls в ТЗ + release claim на всех путях выхода
-- [ ] Контракт-mirror обновлён в same commit (если backend endpoint затронут)
+- [ ] Cross-project contract-mirror обновлён в same commit (если LMS endpoint затронут)
 - [ ] Live smoke critical path gated по env (раз в фазу)
 - [ ] UTF-8 для всех user-visible текстов
-- [ ] Multi-bot изоляция (токены разных ботов не делегируются друг другу)
+- [ ] Multi-bot изоляция (teacher/methodist token не делегируются)
 - [ ] Edit-prompt UX (§10): хелпер для редактирования полей с existing value
 
 ## 9. Связь с другими правилами
 
-- **api-contract-rules.md §1-6**: бот как consumer backend API — все правила backsync применяются.
+- **api-contract-rules.md §1-6**: tg-bot как cross-project consumer LMS — все правила backsync применяются.
 - **operator-handoff-rules.md**: smoke в TG App требует operator (нельзя автоматизировать через playwright); классификация А (mock TG WebApp) vs Б (operator runs bot in real chat).
-- **frontend-stack-rules.md**: TG App — один из runtime-контекстов; правила multi-context smoke matrix распространяются.
+- **frontend-stack-rules.md §4**: TG App context — один из трёх для SPW; правила multi-context smoke matrix распространяются.
 
 ## 10. Edit-prompt UX (редактирование текстовых полей)
 
-Типичная проблема — разрозненная реализация
+Источник: tg-bot внутренней задаче (2026-05-20) — разрозненная реализация
 редактирования полей: где-то prompt был с tap-to-copy старого значения, где-то
 plain-text «Текущее имя: …», где-то ничего. Пользователь не мог скопировать
 старое значение чтобы поменять только фрагмент.
@@ -191,3 +191,6 @@ grep -rB5 "EDIT_TITLE\|EDIT_NAME\|EDIT_EMAIL\|EDIT_DESCRIPTION" src/bots/ \
 
 `techlead-code-reviewer` и `pr-review` обязаны помечать любое новое
 редактирование поля без `send_edit_prompt_with_copy` как **S2 UX-блокер**.
+
+См. `tg-bot/.claude/CLAUDE.md §Edit-Prompt UX Guard` для project-local
+инструкции и ссылок на хелперы.

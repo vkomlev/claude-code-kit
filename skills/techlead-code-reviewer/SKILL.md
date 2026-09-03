@@ -26,8 +26,9 @@ allowed-tools:
 - Корректность и регрессии
 - Архитектура и слоистость
 - Тесты, наблюдаемость, безопасность, rollback
-- Критичные UX/навигационные пути — если путь **задеплоен**, пройти его
-  **на живой странице самому** (ветвь А), а не вычитывать по коду
+- Критичные UX/навигационные пути — если путь **задеплоен** на авторизованный прод, пройти его
+  **на живой странице самому** (ветвь А), а не вычитывать по коду:
+  [live-browser-testing.md](../claude-booster/references/live-browser-testing.md)
 - Ясность спецификации, date/time type safety
 - Целостность фазы, доменная полнота, operator-critical acceptance chain
 
@@ -37,6 +38,7 @@ allowed-tools:
 1. Прочитать `~/.claude/projects/<project-slug>/memory/MEMORY.md` — контекст проекта
 2. Изучить изменённые файлы и затронутые runtime-пути
 3. Выяснить: есть ли спек/план/ТЗ по задаче — они определяют критерии приёмки
+4. (Опционально) `~/.claude/skills/techlead-code-reviewer/references/content-analyzer-findings.md`, если существует — курируемые внешние находки по практикам ревью (knowledge-pipeline, внутренней задаче/208)
 
 ### Шаг 1: Базовый чеклист
 Применить [references/review-checklist.md](references/review-checklist.md) — универсальные проверки.
@@ -113,7 +115,7 @@ allowed-tools:
 - **Каждая находка** содержит: file/path, production impact, конкретное направление фикса
 - **Defect-focused** ревью — избегать style-only замечаний
 - **Current-state evidence > roadmap intent** — оценивать что есть, а не что планируется
-- **Эмиссия ярлыка «оператор» — только через Before-Б check.** Прежде чем пометить любой `Required Fix` или validation-команду исполнителем «оператор» — прогнать строку через [operator-handoff-rules.md](../claude-booster/references/operator-handoff-rules.md) Before-Б check (5 п.). Dev-DB (dev DSN), read-only SQL через MCP, LLM-работа (генерация/классификация через доступную модель) — **категория А**, исполнитель `/executor-pro`/`/executor-lite`, не оператор. «Оператор» (Б) — только prod-write approval, 3rd-party UI, creds/2FA.
+- **Эмиссия ярлыка «оператор» — только через Before-Б check.** Прежде чем пометить любой `Required Fix` или validation-команду исполнителем «оператор» — прогнать строку через [operator-handoff-rules.md](../claude-booster/references/operator-handoff-rules.md) Before-Б check (5 п.). Dev-DB `prep`/`pipeline` (dev DSN), read-only SQL через MCP, LLM-computation (решение задач, генерация `answer_candidate` через доступный solver-tier / `/ege-master` / `llm_client`) — **категория А**, исполнитель `/executor-pro`/`/executor-lite`, не оператор. «Оператор» (Б) — только prod-write approval, 3rd-party UI, creds/2FA. Источник: skills-errors.md 2026-05-27.
 - **Один сильный ревью-артефакт** лучше раздутой ревью-бумаги
 - **Skill Improvement Actions** — обязательно с именем skill, файлом, сутью правки и приоритетом. Generic "улучшить skill X" — не принимается
 

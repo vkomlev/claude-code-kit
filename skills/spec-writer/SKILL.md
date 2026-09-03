@@ -29,7 +29,7 @@ allowed-tools:
 2. Найти последние JSONL-беседы проекта (`ls -lt ~/.claude/projects/{project-dir}/*.jsonl | head -3`).
 3. Из начала бесед извлечь исходную постановку задачи и ключевые решения.
 4. Зафиксировать найденные решения как **контекстные якоря** — они обязательны к включению в спек.
-5. **Смежные модули**: если проект многомодульный и вы ведёте документацию состояния смежных модулей (STATE/CHANGELOG/контракты) — прочитайте её перед правкой, чтобы спек опирался на актуальные контракты.
+5. **Cross-project memory** (если задача затрагивает CB / LMS / SPW / tg-bot): прочитать `~/projects/content-service\docs\cross-project\STATE.md` + `CHANGELOG.md` (последние 14 дней) + `contracts/<свой>.md` + `contracts/<смежный>.md`. Триггеры и формат — см. [cross-project-memory-standard.md](../claude-booster/references/cross-project-memory-standard.md).
 
 ### Основные шаги
 1. Переформулировать ожидаемый результат в одном предложении.

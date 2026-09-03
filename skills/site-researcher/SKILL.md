@@ -21,10 +21,10 @@ allowed-tools:
 ## Роль
 Исследователь сайтов: разведываю структуру и DOM, готовлю спецификации
 для парсеров и SEO/конкурентных отчётов. Не пишу код парсера — отдаю
-спецификацию исполнителю (агенту или скиллу, который пишет код).
+спецификацию исполнителю (executor-lite/executor-pro/fastapi-api-developer).
 
 ## Когда использовать
-- Перед созданием парсера для нового сайта
+- Перед созданием парсера для нового сайта (sample-project, sample-project, sample-project)
 - Конкурентный анализ: тематика, рубрики, частота публикаций, форматы
 - SEO-разведка: title/description/H1/schema.org/OG-теги/скорость отдачи
 - Поиск скрытых API-эндпоинтов (XHR/fetch на странице) — часто можно дёрнуть JSON напрямую
@@ -45,12 +45,14 @@ Skill работает в одном из 5 режимов — оператор 
 ## Порядок работы
 
 ### Шаг 0: Контекст
-1. Если режим не указан в аргументе — задать `AskUserQuestion`:
+1. Прочитать `~/.claude/skills/claude-booster/references/booster-shared.md` (общий протокол)
+1b. (Опционально) `~/.claude/skills/site-researcher/references/content-analyzer-findings.md`, если существует — курируемые внешние находки (knowledge-pipeline, внутренней задаче/208).
+2. Если режим не указан в аргументе — задать `AskUserQuestion`:
    - Контекст: какой сайт исследуем (URL)
    - Суть: какой режим из 5 нужен
    - Рекомендация: A) map  B) dom  C) seo  D) competitors  E) api
-2. Уточнить URL, целевую глубину (сколько страниц анализировать), окно времени
-3. **Если режим = competitors** и список конкурентов не передан — задать `AskUserQuestion`:
+3. Уточнить URL, целевую глубину (сколько страниц анализировать), окно времени
+4. **Если режим = competitors** и список конкурентов не передан — задать `AskUserQuestion`:
    - Контекст: режим competitors сравнивает сайт с внешними конкурентами
    - Суть: нужны 2-5 доменов конкурентов либо явный self-audit
    - Рекомендация: A) перечислить домены  B) self-audit (анализ только текущего сайта)
@@ -58,7 +60,7 @@ Skill работает в одном из 5 режимов — оператор 
 
 ### Шаг 1: Подготовка артефактов
 1. Извлечь домен из URL: `{domain} = parse(url).netloc`
-2. Создать папку `<путь к вашему проекту>/research/{domain}/` если нет
+2. Создать папку `~/projects/content-project\research\{domain}\` если нет
 3. Подпапки по дате запуска: `{domain}/{YYYY-MM-DD}/`
 4. Все артефакты режима пишутся в эту папку
 
@@ -119,7 +121,7 @@ Invoke-WebRequest -Uri "https://example.com/" -UseBasicParsing | Select-Object -
 3. Если sitemap пуст / robots.txt блокирует — явно предупредить
 
 ## Контракт результата
-- `Папка артефактов` — путь `<проект>/research/{domain}/{date}/`
+- `Папка артефактов` — путь `content-project/research/{domain}/{date}/`
 - `Режим` — какой из 5 был отработан
 - `Базовая разведка` — robots.txt + sitemap status (найдены/нет/блокируют)
 - `Основной артефакт` — site-map.md / parser-spec.md / seo-audit.md / competitors-report.md / api-endpoints.md
@@ -149,5 +151,6 @@ Invoke-WebRequest -Uri "https://example.com/" -UseBasicParsing | Select-Object -
   DOM-анализа использовать `Claude_Browser`/`claude-in-chrome` с полным snapshot (`read_page`)
 
 ## Обратная связь
-Проблема с этим skill → `/response-quality-coach` фиксирует дефект и предлагает
-минимальную правку инструкции по протоколу RCA (5 Whys + проверка на раздувание).
+Проблема с этим skill → `/response-quality-coach` фиксирует в
+`~/.claude/skills/claude-booster/references/skills-errors.md` (статус OPEN) →
+`/claude-booster errors` обработает по протоколу RCA.
