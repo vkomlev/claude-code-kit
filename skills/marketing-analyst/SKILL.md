@@ -45,7 +45,7 @@ allowed-tools:
 2. `~/.claude/skills/marketing-strategist/references/marketing-frameworks.md` (раздел юнит-экономики и воронки AARRR) — единый источник определений, не дублировать.
 3. Данные клиента и артефакты: `~/projects/Marketing\clients\{client}\README.md` + `Glob` по его `strategy/`, `analytics/` — считать в контексте целей, а не в вакууме.
 4. **Пропуск пункта 1 или 2 = СТОП.**
-5. (Опционально) `~/.claude/skills/marketing-analyst/references/content-analyzer-findings.md`, если существует — курируемые внешние находки (knowledge-pipeline, внутренней задаче/208).
+5. (Опционально) `~/.claude/skills/marketing-analyst/references/content-analyzer-findings.md`, если существует — курируемые внешние находки (knowledge-pipeline).
 
 ### Шаг 1: Уточнение задачи (интерактивный)
 Аналитика без данных = выдумка. Спросить через `AskUserQuestion`, если не задано:

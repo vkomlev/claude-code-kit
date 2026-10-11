@@ -51,6 +51,19 @@
           {
             "type": "command",
             "command": "python \"C:\\Users\\ИМЯ_ПОЛЬЗОВАТЕЛЯ\\.claude\\hooks\\index_scope_gate.py\""
+          },
+          {
+            "type": "command",
+            "command": "python \"C:\\Users\\ИМЯ_ПОЛЬЗОВАТЕЛЯ\\.claude\\hooks\\schema_gate.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__.*(db|postgres|pg|sql).*__(query|execute|run_query|sql)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"C:\\Users\\ИМЯ_ПОЛЬЗОВАТЕЛЯ\\.claude\\hooks\\schema_gate.py\""
           }
         ]
       }

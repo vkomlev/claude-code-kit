@@ -1,0 +1,13 @@
+{
+  "_doc": "Правила гейта «схема до SQL» (schema_gate.py). Новый MCP-инструмент БД, клиент, служебная схема — строка здесь, Python не трогать.",
+  "mcp_tool_regex": "^mcp__.*(?:db|postgres|pg|sql).*__(?:query|execute|run_query|sql)$",
+  "mcp_sql_keys": ["sql", "query", "statement"],
+  "bash_client_regex": "\\bpsql\\b|\\bpython3?\\b|\\bpy\\s+-3|\\bsqlite3\\b|\\bmysql\\b",
+  "bash_skip_regex": "(?:^|[\\s;&|(])(?:alembic|pytest|pip|git)(?:\\s|$)",
+  "sql_verb_regex": "\\b(?:select|update|insert|delete|with)\\b",
+  "system_schemas": ["information_schema", "pg_catalog", "pg_toast"],
+  "system_table_prefixes": ["pg_", "sql_", "alembic_version"],
+  "from_functions": ["extract", "substring", "substr", "trim", "overlay", "position"],
+  "script_dir_markers": ["\\appdata\\local\\temp\\", "/appdata/local/temp/", "\\scratchpad\\", "/scratchpad/", "/tmp/"],
+  "override_regex": "\\bSCHEMA_OK\\s*=\\s*(?:1|true|yes)\\b|--\\s*SCHEMA_OK\\b"
+}

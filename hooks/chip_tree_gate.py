@@ -18,7 +18,7 @@ r"""PreToolUse-гейт: блокирует tree-global разрушительн
 - Блокировка: exit code 2 + текст причины на stderr (показывается агенту).
 - Пропуск: exit code 0.
 
-Логика (узкий блок-лист — решение оператора внутренней задаче):
+Логика (узкий блок-лист — решение оператора):
   1. Не Bash → пропустить.
   2. Явный override (CHIP_SOLO=1 в команде или в окружении) → пропустить
      (агент подтвердил: он один в этом дереве, операция осознанная).
@@ -28,6 +28,7 @@ r"""PreToolUse-гейт: блокирует tree-global разрушительн
        - bare git stash / stash push / stash save БЕЗ pathspec (`--`) — сметает чужой WIP
        - git reset --hard                  (откат чужих незакоммиченных правок)
        - git clean -f...                   (удаление чужих untracked-файлов)
+       - pnpm/npm/yarn install|add|remove|ci… (пересборка общего node_modules)
   4. Иначе → пропустить.
 
 НЕ блокируем (сознательно, узкий список): `rm -rf .next` (рутинная чистка сборки),
@@ -95,6 +96,19 @@ GIT_CLEAN_FORCE_RE = re.compile(
 )
 
 
+# 5) Установка/удаление зависимостей: одна сессия ставила
+#    пакеты, пока другая работала в том же дереве, — pnpm пересобрал общий
+#    node_modules, у соседей пропали модули и упал встроенный браузер. Узнать,
+#    есть ли в дереве живые соседи, хук не может (рабочий каталог чужого процесса
+#    на Windows не виден), поэтому, как и для остальных правил, агент сам
+#    подтверждает CHIP_SOLO=1. Запуск скриптов (pnpm test/exec, npx) не трогаем.
+DEPS_INSTALL_RE = re.compile(
+    r"(?<![\w-])(?:pnpm|npm|yarn)\s+(?:--?[\w=-]+(?:\s+[^\s-]\S*)?\s+)*"
+    r"(?:install|i|add|remove|rm|uninstall|un|update|up|upgrade|ci|prune|dedupe|link)\b",
+    re.IGNORECASE,
+)
+
+
 def _is_bare_git_stash(cmd: str) -> bool:
     """True для `git stash` / `git stash push|save` БЕЗ pathspec (`--`).
 
@@ -135,6 +149,9 @@ def _matched_rule(cmd: str) -> str:
         return "git clean -f (удаление untracked-файлов, в т.ч. чужих)"
     if _is_bare_git_stash(cmd):
         return "git stash без pathspec (сметает чужой незакоммиченный WIP в общем дереве)"
+    if DEPS_INSTALL_RE.search(cmd):
+        return ("установка/удаление зависимостей (pnpm/npm/yarn install|add|remove|ci…) — "
+                "пересобирает общий node_modules под соседними сессиями")
     return ""
 
 
@@ -142,7 +159,7 @@ REASON = """\
 [chip_tree_gate] Опасная для ОБЩЕГО рабочего дерева команда:
   правило: {rule}
 
-Инцидент внутренней задаче (2026-07-15): несколько фоновых чипов делили одно дерево;
+Инцидент (2026-07-15): несколько фоновых чипов делили одно дерево;
 такая команда снесла общий node_modules и смела чужой WIP. Правило —
 ~/.claude/CLAUDE.md § «Параллельные фоновые чипы в одном рабочем дереве».
 

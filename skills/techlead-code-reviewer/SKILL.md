@@ -38,7 +38,7 @@ allowed-tools:
 1. Прочитать `~/.claude/projects/<project-slug>/memory/MEMORY.md` — контекст проекта
 2. Изучить изменённые файлы и затронутые runtime-пути
 3. Выяснить: есть ли спек/план/ТЗ по задаче — они определяют критерии приёмки
-4. (Опционально) `~/.claude/skills/techlead-code-reviewer/references/content-analyzer-findings.md`, если существует — курируемые внешние находки по практикам ревью (knowledge-pipeline, внутренней задаче/208)
+4. (Опционально) `~/.claude/skills/techlead-code-reviewer/references/content-analyzer-findings.md`, если существует — курируемые внешние находки по практикам ревью (knowledge-pipeline)
 
 ### Шаг 1: Базовый чеклист
 Применить [references/review-checklist.md](references/review-checklist.md) — универсальные проверки.

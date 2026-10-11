@@ -32,7 +32,7 @@ allowed-tools:
 2. Прочитать `~/.claude/skills/prompt-engineer/references/evaluation-rubric.md` — 6 критериев оценки
 3. Если в аргументе пользователя есть URL/файл с примером целевого вывода — прочитать его
 4. Если задача связана с проектом из реестра CLAUDE.md — открыть его CLAUDE.md для контекста стиля
-5. (Опционально) `~/.claude/skills/prompt-engineer/references/content-analyzer-findings.md`, если существует — курируемые внешние находки по промпт-инжинирингу (knowledge-pipeline, внутренней задаче/208)
+5. (Опционально) `~/.claude/skills/prompt-engineer/references/content-analyzer-findings.md`, если существует — курируемые внешние находки по промпт-инжинирингу (knowledge-pipeline)
 
 ## Порядок работы
 

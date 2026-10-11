@@ -46,7 +46,7 @@ Skill работает в одном из 5 режимов — оператор 
 
 ### Шаг 0: Контекст
 1. Прочитать `~/.claude/skills/claude-booster/references/booster-shared.md` (общий протокол)
-1b. (Опционально) `~/.claude/skills/site-researcher/references/content-analyzer-findings.md`, если существует — курируемые внешние находки (knowledge-pipeline, внутренней задаче/208).
+1b. (Опционально) `~/.claude/skills/site-researcher/references/content-analyzer-findings.md`, если существует — курируемые внешние находки (knowledge-pipeline).
 2. Если режим не указан в аргументе — задать `AskUserQuestion`:
    - Контекст: какой сайт исследуем (URL)
    - Суть: какой режим из 5 нужен

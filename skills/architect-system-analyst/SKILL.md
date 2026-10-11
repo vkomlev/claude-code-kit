@@ -38,7 +38,7 @@ allowed-tools:
 3. Существующие `docs/`, `reviews/`, `docs/adr/` (если есть)
 4. `git log --oneline -30` и `git status` — последние изменения и in-flight работа
 5. Если есть — `README.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`
-6. (Опционально) `references/content-analyzer-findings.md`, если существует — курируемые внешние находки по архитектуре и выбору технологий (knowledge-pipeline, внутренней задаче/208)
+6. (Опционально) `references/content-analyzer-findings.md`, если существует — курируемые внешние находки по архитектуре и выбору технологий (knowledge-pipeline)
 
 Если противоречия между памятью и текущим кодом — верить коду, пометить расхождения в `Gaps`.
 

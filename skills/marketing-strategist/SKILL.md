@@ -50,7 +50,7 @@ allowed-tools:
    - IT-школа / курсы / ЕГЭ → материалы оператора + `~/projects/content-project\references\subjects\brand-voice.md` (если есть)
    - тревел → `~/projects/content-project\references\subjects\travel-tone.md` (если есть)
 5. Данные клиента и существующие артефакты: `~/projects/Marketing\clients\{client}\README.md` + `Glob` по его папкам (`strategy/`, `smm/`, `seo/`, ...) — не начинать с нуля.
-5b. (Опционально) `~/.claude/skills/marketing-strategist/references/content-analyzer-findings.md`, если существует — курируемые внешние находки (knowledge-pipeline, внутренней задаче/208).
+5b. (Опционально) `~/.claude/skills/marketing-strategist/references/content-analyzer-findings.md`, если существует — курируемые внешние находки (knowledge-pipeline).
 6. **Пропуск пункта 1 или 2 = СТОП, вернуться и прочитать.**
 
 ### Шаг 1: Уточнение задачи (интерактивный)

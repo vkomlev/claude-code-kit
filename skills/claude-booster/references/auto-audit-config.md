@@ -6,7 +6,7 @@
 > общие для всех заданий этой машины: планировщик стартует в `C:\Windows\System32` (падает
 > всё, что работает с путями от cwd), `$ErrorActionPreference = "Stop"` убивает обёртку на
 > stderr до логирования, History заданий выключена, `schtasks` из Git Bash требует
-> `MSYS_NO_PATHCONV=1`. Стоили двух ложных диагнозов в внутренней задаче.
+> `MSYS_NO_PATHCONV=1`. Стоили двух ложных диагнозов в одной из задач.
 
 ## Команда запуска
 
@@ -28,7 +28,7 @@
 ## TG-уведомления (через @plugin_telegram_telegram)
 
 **Канал:** Telegram-плагин Claude Code (`mcp__plugin_telegram_telegram__reply`).
-**Chat ID оператора:** `344276500` (из `~/.claude/channels/telegram/access.json`).
+**Chat ID оператора:** `<ВАШ_CHAT_ID>` (из `~/.claude/channels/telegram/access.json`).
 **Допущения:** оператор уже выполнил `/telegram:configure` и `/telegram:access` для allowlist.
 
 **Что отправляется:**
@@ -49,7 +49,7 @@
 **Fallback при недоступном TG-плагине** (e.g., headless-сессия не загружает MCP):
 1. Зафиксировать в improvement-log.md: «TG notification skipped: plugin unavailable».
 2. Использовать встроенный `notifyOnCompletion` Claude Code (in-app).
-3. Опциональный workaround: bot token в env + `curl -X POST https://api.telegram.org/bot$TG_BOT_TOKEN/sendMessage -d chat_id=344276500 -d text=...` (но требует хранения токена, что нарушает правила безопасности).
+3. Опциональный workaround: bot token в env + `curl -X POST https://api.telegram.org/bot$TG_BOT_TOKEN/sendMessage -d chat_id=<ВАШ_CHAT_ID> -d text=...` (но требует хранения токена, что нарушает правила безопасности).
 
 ## Способы планирования
 
@@ -85,7 +85,7 @@
    ```powershell
    [Environment]::SetEnvironmentVariable('TG_BOT_TOKEN', '<token>', 'User')
    # Опционально:
-   [Environment]::SetEnvironmentVariable('TG_CHAT_ID', '344276500', 'User')
+   [Environment]::SetEnvironmentVariable('TG_CHAT_ID', '<ВАШ_CHAT_ID>', 'User')
    ```
 3. **Перезагрузить терминал** (чтобы env подхватилась).
 4. **Проверить отправку вручную:**

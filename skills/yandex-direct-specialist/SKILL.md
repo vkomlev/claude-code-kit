@@ -48,7 +48,7 @@ allowed-tools:
 3. **Стратегия клиента:** `~/projects/Marketing\clients\{client}\README.md` + `strategy/` — держать модель и решения клиента. Плюс существующие кампании/выгрузки (`Glob`) — если есть, работать от них.
 4. **Свежесть критична:** Директ часто меняет форматы (ЕПК, автостратегии, отключения). Перед любым режимом — `WebSearch` актуального состояния с датой источника (2025–2026). Не полагаться на память о старых форматах.
 5. **Пропуск пункта 1 или 4 = СТОП.**
-6. (Опционально) `~/.claude/skills/yandex-direct-specialist/references/content-analyzer-findings.md`, если существует — курируемые внешние находки (knowledge-pipeline, внутренней задаче/208).
+6. (Опционально) `~/.claude/skills/yandex-direct-specialist/references/content-analyzer-findings.md`, если существует — курируемые внешние находки (knowledge-pipeline).
 
 ### Шаг 1: Уточнение задачи (интерактивный)
 Спросить через `AskUserQuestion`, если не задано:

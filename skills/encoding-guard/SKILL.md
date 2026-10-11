@@ -1,6 +1,6 @@
 ---
 name: encoding-guard
-version: 2.0.0
+version: 2.1.0
 description: |
   Предотвращение и устранение проблем с кодировкой (UTF-8 corruption, mojibake, mixed encodings)
   в markdown, документации, артефактах ревью, конфигах и rule-файлах. Использовать до и после
@@ -32,6 +32,19 @@ allowed-tools:
    [Console]::InputEncoding = [System.Text.Encoding]::UTF8
    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
    ```
+
+### Шаг 0.5: Проактивная защита нового CLI (до падения, не после)
+При **СОЗДАНИИ** Python-CLI, который печатает не-ASCII (кириллица, эмодзи, рамки) в stdout, —
+сразу заложить UTF-8 в сам код, не дожидаясь `UnicodeEncodeError`/mojibake на Windows-консоли
+(по умолчанию cp1251):
+```python
+import sys
+sys.stdout.reconfigure(encoding="utf-8")   # в начале точки входа CLI
+```
+либо гарантировать `PYTHONIOENCODING=utf-8` в окружении запуска (`.cmd`-обёртка, планировщик).
+Это инвариант авторинга: каждый новый CLI получает защиту в момент написания, а не реактивно —
+после первого сломанного вывода. encoding-guard применяется к новому коду упреждающе, не только
+к диагностике уже испорченных файлов.
 
 ### Шаг 1: Диагностика
 1. Запустить чекер:
@@ -92,6 +105,7 @@ Out-File -Encoding utf8 -FilePath <file>
 - **PowerShell только с явным UTF-8** на вход/выход
 - **Не доверять терминальному рендерингу** для кириллицы — проверять байты (`xxd`, `file -i`)
 - **На Windows при CLI-правках** — PYTHONUTF8=1 для Python-скриптов
+- **UTF-8 закладывается в новый CLI сразу** (см. Шаг 0.5): `sys.stdout.reconfigure(encoding='utf-8')` / `PYTHONIOENCODING=utf-8` — в момент создания, а не после падения на cp1251-консоли
 - **Не продолжать правки при mojibake** — сначала восстановление
 
 ## Обратная связь

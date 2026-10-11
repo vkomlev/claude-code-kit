@@ -51,7 +51,7 @@ SMM-стратег: разбираюсь в маркетинге, психоло
 4. Платформы (по выбранным):
    - TG → `~/projects/content-project\references\platforms\telegram.md`
    - VK → `~/projects/content-project\references\platforms\vk.md`
-4b. (Опционально) `~/.claude/skills/smm-specialist/references/content-analyzer-findings.md`, если существует — курируемые внешние находки (knowledge-pipeline, внутренней задаче/208).
+4b. (Опционально) `~/.claude/skills/smm-specialist/references/content-analyzer-findings.md`, если существует — курируемые внешние находки (knowledge-pipeline).
 5. Ниша (по теме задачи):
    - цифровизация / IT / AI-предприниматель → `~/projects/content-project\references\subjects\brand-voice.md`
    - тревел → `~/projects/content-project\references\subjects\travel-tone.md`
