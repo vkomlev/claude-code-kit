@@ -77,6 +77,15 @@
             "command": "python \"C:\\Users\\ИМЯ_ПОЛЬЗОВАТЕЛЯ\\.claude\\hooks\\artifact_check.py\""
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"C:\\Users\\ИМЯ_ПОЛЬЗОВАТЕЛЯ\\.claude\\hooks\\tests_guard.py\""
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
